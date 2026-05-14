@@ -1,0 +1,35 @@
+# Build artefatti CMake
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# CLion / JetBrains
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eseguibili compilati da build.sh in ogni stage
+*/murmur
+murmur
+
+# Oggetti, lib intermedie
+*.o
+*.obj
+*.a
+*.dylib
+*.so
+*.exe
+
+# macOS
+.DS_Store
+
+# Editor temp
+*.swp
+*.swo
+*~
