@@ -9,7 +9,7 @@
 const int LARGHEZZA = 800;
 const int ALTEZZA   = 600;
 const int N         = 100;
-
+const int radius=3;
 struct Boid {
     Vec2 pos;
     Vec2 vel;
@@ -39,16 +39,28 @@ int main() {
             stormo[i].pos = add(stormo[i].pos, mul(stormo[i].vel, dt));
 
             // TODO 1: wrap toroidale.
-            // Se stormo[i].pos.x esce a sinistra (< 0), spostalo di +LARGHEZZA.
-            // Se esce a destra (> LARGHEZZA), spostalo di -LARGHEZZA.
-            // Stessa cosa per y con ALTEZZA.
+            if (stormo[i].pos.x<=0-radius) {
+                stormo[i].pos.x+= LARGHEZZA+radius;
+            }
+
+            if (stormo[i].pos.x>=LARGHEZZA+radius) {
+                stormo[i].pos.x-= LARGHEZZA-radius;
+            }
+            if (stormo[i].pos.y<=0-radius) {
+                stormo[i].pos.y+= ALTEZZA+radius;
+            }
+
+            if (stormo[i].pos.y>=ALTEZZA+radius) {
+                stormo[i].pos.y-= ALTEZZA-radius;
+            }
+
 
         }
 
         BeginDrawing();
         ClearBackground(BLACK);
         for (int i = 0; i < N; ++i) {
-            DrawCircle((int)stormo[i].pos.x, (int)stormo[i].pos.y, 3.0f, WHITE);
+            DrawCircle((int)stormo[i].pos.x, (int)stormo[i].pos.y, radius, WHITE);
         }
         EndDrawing();
     }

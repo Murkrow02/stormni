@@ -1,5 +1,6 @@
 // vec2.h — vettore 2D minimale (versione completa, dallo step 03).
-#pragma once
+#ifndef STORNI_BOID_H
+#define STORNI_BOID_H
 #include <cmath>
 
 struct Vec2 {
@@ -19,3 +20,4 @@ inline Vec2 normalize(Vec2 a) {
 }
 
 inline float dist(Vec2 a, Vec2 b) { return norm(sub(a, b)); }
+#endif //STORNI_BOID_H
