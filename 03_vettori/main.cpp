@@ -5,28 +5,33 @@
 #include "vec2.h"
 
 const int LARGHEZZA = 800;
-const int ALTEZZA   = 600;
+const int ALTEZZA = 600;
+const int radius = 20;
 
 int main() {
     InitWindow(LARGHEZZA, ALTEZZA, "Storni - Step 03 - Vettori");
     SetTargetFPS(60);
-
-    Vec2 pos = { LARGHEZZA / 2.0f, ALTEZZA / 2.0f };
-    Vec2 vel = { 150.0f, 0.0f };
+    Vec2 pos{LARGHEZZA / 2., ALTEZZA / 2.};
+    Vec2 vel{200, 200};
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
-
-        // pos = pos + vel * dt, usando le tue funzioni.
         pos = add(pos, mul(vel, dt));
 
-        // Wrap orizzontale.
-        if (pos.x > LARGHEZZA) pos.x = 0.0f;
-        if (pos.x < 0.0f)      pos.x = LARGHEZZA;
+        if (pos.x >= LARGHEZZA - radius || pos.x <= 0 + radius) {
+            vel.x = -vel.x;
+        }
+        if (pos.y >= ALTEZZA - radius || pos.y <= 0 + radius) {
+            vel.y = -vel.y;
+        }
+
 
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawCircle((int)pos.x, (int)pos.y, 8.0f, WHITE);
+
+        DrawCircle(pos.x, pos.y, radius, WHITE);
+        // DrawCube(Vector3{LARGHEZZA/2., ALTEZZA/2., 50}, 30,30,30, WHITE);
+
         EndDrawing();
     }
 
