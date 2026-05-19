@@ -7,34 +7,36 @@
 #include <ctime>
 
 const int LARGHEZZA = 800;
-const int ALTEZZA   = 600;
-const int N         = 100;
+const int ALTEZZA = 600;
+const int N = 100;
+const int R_BOID = 5;
 
-const float R_SEP     = 20.0f;
+const float R_SEP = 20.0f;
 const float MAX_SPEED = 200.0f;
-const float W_SEP     = 1.5f;
+const float W_SEP = 2.0f;
+const float R_VIEW = 50.0f;
+const float W_ALL = 1.0f;
 
-// TODO 1: aggiungi R_VIEW e W_ALL.
-// const float R_VIEW = 50.0f;
-// const float W_ALL  = 1.0f;
-
-struct Boid { Vec2 pos; Vec2 vel; };
+struct Boid {
+    Vec2 pos;
+    Vec2 vel;
+};
 
 static float casuale(float a, float b) {
-    return a + ((float)rand() / RAND_MAX) * (b - a);
+    return a + ((float) rand() / RAND_MAX) * (b - a);
 }
 
 static Vec2 applica_wrap(Vec2 p) {
-    if (p.x < 0)         p.x += LARGHEZZA;
+    if (p.x < 0) p.x += LARGHEZZA;
     if (p.x > LARGHEZZA) p.x -= LARGHEZZA;
-    if (p.y < 0)         p.y += ALTEZZA;
-    if (p.y > ALTEZZA)   p.y -= ALTEZZA;
+    if (p.y < 0) p.y += ALTEZZA;
+    if (p.y > ALTEZZA) p.y -= ALTEZZA;
     return p;
 }
 
-static Vec2 calcola_separazione(const std::vector<Boid>& stormo, int i) {
+static Vec2 calcola_separazione(const std::vector<Boid> &stormo, int i) {
     Vec2 spinta = {0, 0};
-    for (int j = 0; j < (int)stormo.size(); ++j) {
+    for (int j = 0; j < (int) stormo.size(); ++j) {
         if (j == i) continue;
         float d = dist(stormo[i].pos, stormo[j].pos);
         if (d > 0.0f && d < R_SEP) {
@@ -45,33 +47,33 @@ static Vec2 calcola_separazione(const std::vector<Boid>& stormo, int i) {
     return spinta;
 }
 
-// TODO 2: scrivi calcola_allineamento.
-// Vec2 calcola_allineamento(const std::vector<Boid>& stormo, int i) {
-//     Vec2 somma_vel = {0, 0};
-//     int k = 0;
-//     for (int j = 0; j < (int)stormo.size(); ++j) {
-//         if (j == i) continue;
-//         float d = dist(stormo[i].pos, stormo[j].pos);
-//         if (d > 0.0f && d < R_VIEW) {
-//             somma_vel = add(somma_vel, stormo[j].vel);
-//             k++;
-//         }
-//     }
-//     if (k == 0) return Vec2{0, 0};
-//     Vec2 v_media = mul(somma_vel, 1.0f / k);
-//     return sub(v_media, stormo[i].vel);
-// }
+Vec2 calcola_allineamento(const std::vector<Boid> &stormo, int i) {
+    Vec2 v_sum{0, 0};
+    float tot = 0;
+    for (int j = 0; j != N; ++j) {
+        if (j == i) continue;
+        float d = dist(stormo[i].pos, stormo[j].pos);
+        if (d <= R_VIEW) {
+            v_sum = add(mul(normalize(v_sum), MAX_SPEED), stormo[j].vel);
+            tot += 1;
+        }
+    }
+    if (tot == 0) { return v_sum; }
+    Vec2 v_cm = mul(v_sum, 1 / tot);
+    Vec2 steer_all = sub(v_cm, stormo[i].vel);
+    return steer_all;
+}
 
 int main() {
     InitWindow(LARGHEZZA, ALTEZZA, "Storni - Step 07 - Allineamento");
     SetTargetFPS(60);
-    srand((unsigned)time(NULL));
+    srand((unsigned) time(NULL));
 
     std::vector<Boid> stormo;
     for (int i = 0; i < N; ++i) {
         stormo.push_back(Boid{
-            { casuale(0, LARGHEZZA), casuale(0, ALTEZZA) },
-            { casuale(-150, 150),    casuale(-150, 150)    }
+            {casuale(0, LARGHEZZA), casuale(0, ALTEZZA)},
+            {casuale(-350, 350), casuale(-350, 350)}
         });
     }
 
@@ -82,29 +84,24 @@ int main() {
 
         // Fase 1: calcola tutte le sterzate.
         for (int i = 0; i < N; ++i) {
-            sep[i]  = calcola_separazione(stormo, i);
-            // TODO 3a: all_[i] = calcola_allineamento(stormo, i);
-        }
-
-        // Fase 2: applica.
-        for (int i = 0; i < N; ++i) {
-            Vec2 acc = mul(sep[i], W_SEP);
-            // TODO 3b: somma il contributo di allineamento.
-            // acc = add(acc, mul(all_[i], W_ALL));
-
-            stormo[i].vel = add(stormo[i].vel, mul(acc, 60.0f * dt));
-
-            float v = norm(stormo[i].vel);
-            if (v > MAX_SPEED) stormo[i].vel = mul(normalize(stormo[i].vel), MAX_SPEED);
-
+            Vec2 steer_sep{0, 0};
+            Vec2 steer_all{0, 0};
+            steer_sep = calcola_separazione(stormo, i);
+            steer_all = calcola_allineamento(stormo, i);
+            stormo[i].vel = add(stormo[i].vel, add(mul(steer_sep,W_SEP*dt),mul(steer_all, W_ALL*dt)));
+            stormo[i].vel.x = std::min(stormo[i].vel.x, MAX_SPEED);
+            stormo[i].vel.y = std::min(stormo[i].vel.y, MAX_SPEED);
             stormo[i].pos = add(stormo[i].pos, mul(stormo[i].vel, dt));
             stormo[i].pos = applica_wrap(stormo[i].pos);
         }
 
+
         BeginDrawing();
         ClearBackground(BLACK);
         for (int i = 0; i < N; ++i) {
-            DrawCircle((int)stormo[i].pos.x, (int)stormo[i].pos.y, 3.0f, WHITE);
+            DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_SEP, CLITERAL(Color){ 255, 0, 0, 50 });
+            DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_VIEW, CLITERAL(Color){ 0, 255, 0, 50 });
+            DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_BOID, WHITE);
         }
         EndDrawing();
     }
