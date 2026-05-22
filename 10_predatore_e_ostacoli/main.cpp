@@ -10,17 +10,15 @@ const int LARGHEZZA = 800;
 const int ALTEZZA   = 600;
 const int N         = 100;
 
-const float R_SEP     = 20.0f;
-const float R_VIEW    = 50.0f;
+const float R_SEP     = 50.0f;
+const float R_VIEW    = 70.0f;
 const float MAX_SPEED = 200.0f;
-const float W_SEP     = 1.5f;
+const float W_SEP     = 7.5f;
 const float W_ALL     = 1.0f;
 const float W_COES    = 1.0f;
-
-// TODO 1: parametri nuovi.
-// const float R_FUGA = 80.0f;
-// const float W_FUGA = 5.0f;
-// const float W_OST  = 2.0f;
+const float R_FUGA = 80.0f;
+const float W_FUGA = 5.0f;
+const float W_OST  = 66.0f;
 
 struct Boid     { Vec2 pos; Vec2 vel; };
 struct Ostacolo { Vec2 pos; float raggio; };
@@ -68,25 +66,26 @@ static Vec2 calcola_coesione(const std::vector<Boid>& s, int i) {
     return sub(mul(somma, 1.0f / k), s[i].pos);
 }
 
-// TODO 4a: fuga dal predatore.
-// Vec2 calcola_fuga(const Boid& b, Vec2 predatore) {
-//     float d = dist(b.pos, predatore);
-//     if (d > 0.0f && d < R_FUGA)
-//         return mul(normalize(sub(b.pos, predatore)), 1.0f);
-//     return Vec2{0, 0};
-// }
 
-// TODO 4b: repulsione da ostacoli.
-// Vec2 calcola_ostacoli(const Boid& b, const std::vector<Ostacolo>& ostacoli) {
-//     Vec2 spinta = {0, 0};
-//     for (const auto& o : ostacoli) {
-//         float d = dist(b.pos, o.pos);
-//         float soglia = o.raggio + 30.0f; // margine di sicurezza
-//         if (d > 0.0f && d < soglia)
-//             spinta = add(spinta, mul(normalize(sub(b.pos, o.pos)), (soglia - d) / soglia));
-//     }
-//     return spinta;
-// }
+Vec2 calcola_fuga(const Boid& b, Vec2 predatore) {
+    float d = dist(b.pos, predatore );
+    if (d<=R_FUGA) {
+        Vec2 fuga = mul(normalize(sub(b.pos, predatore)), W_FUGA);
+        return fuga;
+    }
+    return Vec2{0, 0};
+}
+
+Vec2 calcola_ostacoli(const Boid& b, const std::vector<Ostacolo>& ostacoli) {
+    Vec2 spinta = {0, 0};
+     for (const auto& o : ostacoli) {
+         float d = dist(b.pos, o.pos);
+         float soglia = o.raggio + 30.0f;
+        if (d > 0.0f && d < soglia)
+            spinta = add(spinta, mul(normalize(sub(b.pos, o.pos)), (soglia - d) / soglia));
+    }
+    return spinta;
+}
 
 int main() {
     InitWindow(LARGHEZZA, ALTEZZA, "Storni - Step 10 - Predatore e Ostacoli");
@@ -100,12 +99,12 @@ int main() {
             { casuale(-150, 150),    casuale(-150, 150)    }
         });
 
-    // TODO 2: ostacoli (palazzi).
-    // std::vector<Ostacolo> ostacoli = {
-    //     { {200, 300}, 40 },
-    //     { {500, 200}, 60 },
-    //     { {600, 450}, 30 }
-    // };
+
+    std::vector<Ostacolo> ostacoli = {
+        { {200, 300}, 40 },
+        { {500, 200}, 60 },
+        { {600, 450}, 30 }
+    };
 
     std::vector<Vec2> sep(N), all_(N), coes(N);
 
@@ -113,7 +112,7 @@ int main() {
         float dt = GetFrameTime();
 
         // TODO 3: posizione predatore dal mouse.
-        // Vec2 predatore = { (float)GetMouseX(), (float)GetMouseY() };
+        Vec2 predatore = { (float)GetMouseX(), (float)GetMouseY() };
 
         for (int i = 0; i < N; ++i) {
             sep[i]  = calcola_separazione(stormo, i);
@@ -121,10 +120,9 @@ int main() {
             coes[i] = calcola_coesione(stormo, i);
         }
         for (int i = 0; i < N; ++i) {
-            Vec2 acc = add(add(mul(sep[i], W_SEP), mul(all_[i], W_ALL)), mul(coes[i], W_COES));
-            // TODO 4c: somma fuga e ostacoli.
-            // acc = add(acc, mul(calcola_fuga(stormo[i], predatore),     W_FUGA));
-            // acc = add(acc, mul(calcola_ostacoli(stormo[i], ostacoli),  W_OST));
+            Vec2 acc = add(add(mul(sep[i], W_SEP + casuale(-1,1)), mul(all_[i], W_ALL + casuale(-1,1))), mul(coes[i], W_COES + casuale(-1,1)));
+            acc = add(acc, mul(calcola_fuga(stormo[i], predatore),     W_FUGA + casuale(-1,1)));
+            acc = add(acc, mul(calcola_ostacoli(stormo[i], ostacoli),  W_OST + casuale(-1,1)));
 
             stormo[i].vel = add(stormo[i].vel, mul(acc, 60.0f * dt));
             float v = norm(stormo[i].vel);
@@ -135,16 +133,15 @@ int main() {
 
         BeginDrawing();
         ClearBackground(BLACK);
-        // TODO 5a: disegna ostacoli.
-        // for (const auto& o : ostacoli)
-        //     DrawCircle((int)o.pos.x, (int)o.pos.y, o.raggio, GRAY);
+        for (const auto& o : ostacoli)
+            DrawCircle((int)o.pos.x, (int)o.pos.y, o.raggio, GRAY);
 
         for (int i = 0; i < N; ++i)
             DrawCircle((int)stormo[i].pos.x, (int)stormo[i].pos.y, 3.0f, WHITE);
 
-        // TODO 5b: disegna predatore (col raggio di fuga come cerchio vuoto).
-        // DrawCircleLines((int)predatore.x, (int)predatore.y, R_FUGA, MAROON);
-        // DrawCircle     ((int)predatore.x, (int)predatore.y, 8.0f,    RED);
+
+        DrawCircleLines((int)predatore.x, (int)predatore.y, R_FUGA, MAROON);
+        DrawCircle     ((int)predatore.x, (int)predatore.y, 8.0f,    RED);
 
         EndDrawing();
     }

@@ -1,40 +1,37 @@
-// Step 09 — Tara i pesi delle 3 regole con la tastiera, in tempo reale.
-
 #include "raylib.h"
 #include "vec2.h"
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 
-const int LARGHEZZA = 800;
-const int ALTEZZA   = 600;
-const int N         = 100;
-
-const float R_SEP     = 20.0f;
-const float R_VIEW    = 50.0f;
+const int LARGHEZZA = 1800;
+const int ALTEZZA = 900;
+const int N = 100;
+const int R_BOID = 5;
+const float R_SEP = 30.0f;
+const float R_VIEW = 150.0f;
 const float MAX_SPEED = 200.0f;
 
-// TODO 1: rendi questi tre NON const (modificabili a runtime).
-float W_SEP  = 1.5f;
-float W_ALL  = 1.0f;
-float W_COES = 1.0f;
-
-struct Boid { Vec2 pos; Vec2 vel; };
+struct Boid {
+    Vec2 pos;
+    Vec2 vel;
+};
 
 static float casuale(float a, float b) {
-    return a + ((float)rand() / RAND_MAX) * (b - a);
+    return a + ((float) rand() / RAND_MAX) * (b - a);
 }
+
 static Vec2 applica_wrap(Vec2 p) {
-    if (p.x < 0)         p.x += LARGHEZZA;
+    if (p.x < 0) p.x += LARGHEZZA;
     if (p.x > LARGHEZZA) p.x -= LARGHEZZA;
-    if (p.y < 0)         p.y += ALTEZZA;
-    if (p.y > ALTEZZA)   p.y -= ALTEZZA;
+    if (p.y < 0) p.y += ALTEZZA;
+    if (p.y > ALTEZZA) p.y -= ALTEZZA;
     return p;
 }
 
-static Vec2 calcola_separazione(const std::vector<Boid>& s, int i) {
+static Vec2 calcola_separazione(const std::vector<Boid> &s, int i) {
     Vec2 spinta = {0, 0};
-    for (int j = 0; j < (int)s.size(); ++j) {
+    for (int j = 0; j < (int) s.size(); ++j) {
         if (j == i) continue;
         float d = dist(s[i].pos, s[j].pos);
         if (d > 0.0f && d < R_SEP)
@@ -42,85 +39,93 @@ static Vec2 calcola_separazione(const std::vector<Boid>& s, int i) {
     }
     return spinta;
 }
-static Vec2 calcola_allineamento(const std::vector<Boid>& s, int i) {
+
+static Vec2 calcola_allineamento(const std::vector<Boid> &s, int i) {
     Vec2 somma = {0, 0};
     int k = 0;
-    for (int j = 0; j < (int)s.size(); ++j) {
+    for (int j = 0; j < (int) s.size(); ++j) {
         if (j == i) continue;
         float d = dist(s[i].pos, s[j].pos);
-        if (d > 0.0f && d < R_VIEW) { somma = add(somma, s[j].vel); k++; }
+        if (d > 0.0f && d < R_VIEW) {
+            somma = add(somma, s[j].vel);
+            k++;
+        }
     }
     if (k == 0) return Vec2{0, 0};
     return sub(mul(somma, 1.0f / k), s[i].vel);
 }
-static Vec2 calcola_coesione(const std::vector<Boid>& s, int i) {
+
+// TODO 2: scrivi calcola_coesione.
+Vec2 calcola_coesione(const std::vector<Boid> &s, int i) {
     Vec2 somma = {0, 0};
     int k = 0;
-    for (int j = 0; j < (int)s.size(); ++j) {
+    for (int j = 0; j < (int) s.size(); ++j) {
         if (j == i) continue;
         float d = dist(s[i].pos, s[j].pos);
-        if (d > 0.0f && d < R_VIEW) { somma = add(somma, s[j].pos); k++; }
+        if (d > 0.0f && d < R_VIEW) {
+            somma = add(somma, s[j].pos);
+            k++;
+        }
     }
     if (k == 0) return Vec2{0, 0};
-    return sub(mul(somma, 1.0f / k), s[i].pos);
-}
-
-static void inizializza_stormo(std::vector<Boid>& s) {
-    s.clear();
-    for (int i = 0; i < N; ++i)
-        s.push_back(Boid{
-            { casuale(0, LARGHEZZA), casuale(0, ALTEZZA) },
-            { casuale(-150, 150),    casuale(-150, 150)    }
-        });
+    return sub(mul(somma, 1.0f / k), s[i].vel);
 }
 
 int main() {
-    InitWindow(LARGHEZZA, ALTEZZA, "Storni - Step 09 - Parametri");
+    InitWindow(LARGHEZZA, ALTEZZA, "Storni - Step 08 - Coesione (Murmuration!)");
     SetTargetFPS(60);
-    srand((unsigned)time(NULL));
+    srand((unsigned) time(NULL));
+    float W_SEP = 3.5f;
+    float W_ALL = 1.0f;
+    float W_COES = 3.0f;
 
     std::vector<Boid> stormo;
-    inizializza_stormo(stormo);
+    for (int i = 0; i < N; ++i)
+        stormo.push_back(Boid{
+            {casuale(0, LARGHEZZA), casuale(0, ALTEZZA)},
+            {casuale(-150, 150), casuale(-150, 150)}
+        });
 
     std::vector<Vec2> sep(N), all_(N), coes(N);
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
-        // TODO 2: leggi tastiera e modifica i pesi.
-        // Q/A => W_SEP, W/S => W_ALL, E/D => W_COES.
-        // if (IsKeyDown(KEY_Q)) W_SEP -= 1.0f * dt;
-        // if (IsKeyDown(KEY_A)) W_SEP += 1.0f * dt;
-        // ... (idem per gli altri)
-        // R (singolo evento) => reset.
-        // if (IsKeyPressed(KEY_R)) { W_SEP = 1.5f; W_ALL = 1.0f; W_COES = 1.0f; inizializza_stormo(stormo); }
-
-        // TODO 3: clamp >= 0.
-        // if (W_SEP < 0) W_SEP = 0; (idem per gli altri)
+        if (IsKeyDown(KEY_Q)) W_SEP += 10.0F *dt;
+        if (IsKeyDown(KEY_W)) W_ALL += 10.0F *dt;
+        if (IsKeyDown(KEY_E)) W_COES += 10.0F *dt;
+        if (IsKeyDown(KEY_A)) W_SEP -= 10.0F *dt;
+        if (IsKeyDown(KEY_S)) W_ALL -= 10.0F *dt;
+        if (IsKeyDown(KEY_D)) W_COES -= 10.0F *dt;
+        if (IsKeyDown(KEY_R)) {
+            W_SEP = 1.0F;
+            W_ALL = 1.0F;
+            W_COES = 1.0F;
+        }
 
         for (int i = 0; i < N; ++i) {
-            sep[i]  = calcola_separazione(stormo, i);
+            sep[i] = calcola_separazione(stormo, i);
             all_[i] = calcola_allineamento(stormo, i);
             coes[i] = calcola_coesione(stormo, i);
-        }
-        for (int i = 0; i < N; ++i) {
+
             Vec2 acc = add(add(mul(sep[i], W_SEP), mul(all_[i], W_ALL)), mul(coes[i], W_COES));
-            stormo[i].vel = add(stormo[i].vel, mul(acc, 60.0f * dt));
-            float v = norm(stormo[i].vel);
-            if (v > MAX_SPEED) stormo[i].vel = mul(normalize(stormo[i].vel), MAX_SPEED);
+            stormo[i].vel = add(stormo[i].vel, mul(acc, dt));
+            stormo[i].vel.x = std::min(stormo[i].vel.x, MAX_SPEED);
+            stormo[i].vel.y = std::min(stormo[i].vel.y, MAX_SPEED);
             stormo[i].pos = add(stormo[i].pos, mul(stormo[i].vel, dt));
             stormo[i].pos = applica_wrap(stormo[i].pos);
         }
 
         BeginDrawing();
-        ClearBackground(BLACK);
-        for (int i = 0; i < N; ++i)
-            DrawCircle((int)stormo[i].pos.x, (int)stormo[i].pos.y, 3.0f, WHITE);
-
-        // TODO 4: disegna 3 righe di testo coi valori dei pesi.
-        // DrawText(TextFormat("W_SEP  = %.2f  (Q-/A+)", W_SEP),  10, 10, 18, WHITE);
-        // ...
-
+        for (int i = 0; i != N; ++i) {
+         //   DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_SEP, CLITERAL(Color){255, 0, 0, 100});
+           // DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_VIEW, CLITERAL(Color){0, 255, 0, 50});
+            DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_BOID, WHITE);
+            ClearBackground(BLACK);
+        }
+        DrawText(TextFormat("W_SEP  = %.2f  (Q+/A-)", W_SEP), 10, 10, 18, WHITE);
+        DrawText(TextFormat("W_ALL  = %.2f  (W+/S-)", W_ALL), 10, 30, 18, WHITE);
+        DrawText(TextFormat("W_COES  = %.2f  (E+/D-)", W_COES), 10, 50, 18, WHITE);
         EndDrawing();
     }
 

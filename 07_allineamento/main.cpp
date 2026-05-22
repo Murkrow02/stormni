@@ -99,7 +99,7 @@ int main() {
         BeginDrawing();
         ClearBackground(BLACK);
         for (int i = 0; i < N; ++i) {
-            DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_SEP, CLITERAL(Color){ 255, 0, 0, 50 });
+            DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_SEP, CLITERAL(Color){ 255, 0, 0, 100 });
             DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_VIEW, CLITERAL(Color){ 0, 255, 0, 50 });
             DrawCircle(stormo[i].pos.x, stormo[i].pos.y, R_BOID, WHITE);
         }
