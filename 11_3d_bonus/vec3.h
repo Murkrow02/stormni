@@ -29,9 +29,8 @@ struct Vec3 {
         return result += v;
     }
 
-    inline Vec3 operator-(Vec3 const &v) {
-        auto result = *this;
-        return result - v;
+    inline Vec3 operator-(Vec3 const &v) const {
+        return {x-v.x, y-v.y, z-v.z};
     }
 
     inline Vec3 operator*(float k) {

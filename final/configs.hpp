@@ -11,6 +11,5 @@ namespace Config {
     const float BOX_HALF_EXTENT = 200.0f;
 
     // Simulation params
-    const int N = 600;
-    const float BOID_MAX_SPEED = 200.0f;
+    const int N = 800;
 }
