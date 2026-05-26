@@ -9,15 +9,13 @@
 
 const int LARGHEZZA = 800;
 const int ALTEZZA = 600;
-const int N = 500;
+const int N = 600;
 
 const float BOX = 200.0f; // metà lato del cubo dello spazio simulato
 const float R_SEP = 40.0f;
 const float R_VIEW = 50.0f;
 const float MAX_SPEED = 200.0f;
-const float W_SEP = 5.5f;
-const float W_ALL = 1.0f;
-const float W_COES = 1.0f;
+
 
 struct Boid {
     Vec3 pos;
@@ -117,11 +115,28 @@ int main() {
     camera.fovy = 60.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    float W_SEP = 5.5f;
+    float W_ALL = 1.0f;
+    float W_COES = 1.0f;
+
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
 
+
         UpdateCamera(&camera, CAMERA_ORBITAL);
+        //no coefficienti negativi
+        if (IsKeyDown(KEY_Q)) W_SEP += 10.0F *dt;
+        if (IsKeyDown(KEY_W)) W_ALL += 10.0F *dt;
+        if (IsKeyDown(KEY_E)) W_COES += 10.0F *dt;
+        if (IsKeyDown(KEY_A)) W_SEP -= 10.0F *dt;
+        if (IsKeyDown(KEY_S)) W_ALL -= 10.0F *dt;
+        if (IsKeyDown(KEY_D)) W_COES -= 10.0F *dt;
+        if (IsKeyDown(KEY_R)) {
+            W_SEP = 1.0F;
+            W_ALL = 1.0F;
+            W_COES = 1.0F;
+        }
 
         for (int i = 0; i < N; ++i) {
             sep[i] = calcola_separazione(stormo, i);
@@ -145,6 +160,9 @@ int main() {
         for (int i = 0; i < N; ++i)
             DrawSphere(to_rl(stormo[i].pos), 2.0f, WHITE);
         EndMode3D();
+        DrawText(TextFormat("W_SEP  = %.2f  (Q+/A-)", W_SEP), 10, 10, 18, WHITE);
+        DrawText(TextFormat("W_ALL  = %.2f  (W+/S-)", W_ALL), 10, 30, 18, WHITE);
+        DrawText(TextFormat("W_COES  = %.2f  (E+/D-)", W_COES), 10, 50, 18, WHITE);
 
         EndDrawing();
     }
