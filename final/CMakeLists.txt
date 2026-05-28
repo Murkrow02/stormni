@@ -9,5 +9,6 @@ add_executable(game main.cpp
         boid.cpp
         boid.hpp
         starling.cpp
-        starling.hpp)
+        starling.hpp
+        dangers.hpp)
 target_link_libraries(game PRIVATE raylib)

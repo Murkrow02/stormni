@@ -1,4 +1,4 @@
-//
+ //
 // Created by Marco Coppola on 22/05/2026.
 //
 
@@ -7,15 +7,17 @@
 #include "configs.hpp"
 
 
-static float casuale(float a, float b) {
-    return a + ((float)rand() / RAND_MAX) * (b - a);
-}
+// static float casuale(float a, float b) {
+//     return a + ((float)rand() / RAND_MAX) * (b - a);
+// }
 
-Boid::Boid(int id, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep) {
+Boid::Boid(int id, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep, float r_fear, float fear_factor) {
 
     this->color = color;
     this->max_speed = max_speed;
     this->id = id;
+    this->r_fear = r_fear;
+    this->fear_factor= fear_factor;
 
     // Add some noise to parameters to make simulation look more organic
     static std::random_device rd;
@@ -86,9 +88,17 @@ void Boid::increment_pos(const Vec3 pos)  {
     apply_wrap();
 }
 
+float Boid::get_r_fear() const {
+    return r_fear;
+}
+float Boid::get_fear_factor() const {
+    return fear_factor;
+}
 
 void Boid::clamp_vel() {
     this->vel.x = std::min(this->vel.x, this->max_speed);
     this->vel.y = std::min(this->vel.y, this->max_speed);
     this->vel.z = std::min(this->vel.z, this->max_speed);
 }
+
+//calcolare repulsione da ostacoli-predatori
