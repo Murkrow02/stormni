@@ -36,7 +36,7 @@ public:
     float get_r_fear() const;
     float get_fear_factor() const;
 
-
+// queste vanno definite nel cpp no? 
     /*----------------------
      * REYNOLD'S RULES
      ---------------------*/
