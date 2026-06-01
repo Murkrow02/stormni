@@ -6,7 +6,7 @@
 
 const int LARGHEZZA = 1800;
 const int ALTEZZA = 900;
-const int N = 100;
+const int N = 500;
 const int R_BOID = 5;
 const float R_SEP = 30.0f;
 const float R_VIEW = 150.0f;

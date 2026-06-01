@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAME_CONFIGS_H
+#define GAME_CONFIGS_H
 #include <string_view>
 
 namespace Config {
@@ -13,3 +14,4 @@ namespace Config {
     // Simulation params
     const int N = 400;
 }
+#endif //GAME_CONFIGS_H

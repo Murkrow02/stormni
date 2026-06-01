@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAME_VEC3_H
+#define GAME_VEC3_H
 #include <cmath>
 
 struct Vec3 {
@@ -58,5 +59,10 @@ static inline Vec3 normalize(Vec3 a) {
     return Vec3{0, 0, 0};
 }
 
+inline float dot(Vec3 const &a, Vec3 const &b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
 
 inline float dist(Vec3 a, Vec3 b) { return norm(a - b); }
+
+#endif //GAME_VEC3_H

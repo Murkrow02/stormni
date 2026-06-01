@@ -7,23 +7,19 @@
 #include "Vec3.hpp"
 #include <raylib.h>
 
-class Boid;
-
 class Dangers {
 protected:
     Color color;
     float base_threat;
 
 public:
-    // distruttore va messo??
-    // virtual ~Dangers() = default;
+    virtual ~Dangers() = default;
     float get_base_threat() const {
         return base_threat;
     }
     virtual Vec3 get_closest_point(const Vec3& boid_pos) const = 0;
     virtual void movement(float dt){}
 
-    //così va bene per ogg puntiformi o sferici, per il muro???
 
 };
 
