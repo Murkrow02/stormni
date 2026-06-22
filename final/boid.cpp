@@ -92,66 +92,129 @@ float Boid::get_fear_factor() const {
 }
 
 void Boid::clamp_vel() {
-    this->vel.x = std::min(this->vel.x, this->max_speed);
-    this->vel.y = std::min(this->vel.y, this->max_speed);
-    this->vel.z = std::min(this->vel.z, this->max_speed);
-}
-
-Vec3 Boid::separation_from(const std::vector<Boid> &flock) const {
-    Vec3 steer = {0, 0, 0};
-
-    for (const auto &i: flock) {
-        if (this->id == i.id) continue;
-        float d = dist(this->pos, i.pos);
-        if (d > 0.0f && d < r_sep)
-            steer += normalize(this->pos - i.pos) / d;
+    float current_speed_sq = norm_sq(this->vel);
+    if (current_speed_sq > (this->max_speed * this->max_speed)) {
+        float current_speed = std::sqrt(current_speed_sq);
+        this->vel = (this->vel / current_speed) * this->max_speed;
     }
-    return steer;
 }
 
-Vec3 Boid::alignment_to(const std::vector<Boid> &flock) const {
-    Vec3 sum = {0, 0, 0};
-    int k = 0;
-    for (const auto &i: flock) {
-        if (i.id == this->id) continue;
-        float d = dist(i.pos, this->pos);
-        if (d > 0.0f && d < r_view) {
-            sum += i.vel;
-            k++;
+
+
+// Vec3 Boid::separation_from(const std::vector<Boid> &flock) const {
+//     Vec3 steer = {0, 0, 0};
+//
+//     for (const auto &i: flock) {
+//         if (this->id == i.id) continue;
+//         float d_sq = dist_sq(this->pos, i.pos);
+//         if (d_sq > 0.0f && d_sq < r_sep*r_sep) {
+//             float d = std::sqrt(d_sq);
+//             steer += normalize(this->pos - i.pos) / d ;
+//         }
+//     }
+//     return steer;
+// }
+//
+// Vec3 Boid::alignment_to(const std::vector<Boid> &flock) const {
+//     Vec3 sum = {0, 0, 0};
+//     int k = 0;
+//     for (const auto &i: flock) {
+//         if (i.id == this->id) continue;
+//         float d_sq = dist_sq(i.pos, this->pos);
+//         if (d_sq > 0.0f && d_sq < r_view*r_view) {
+//             sum += i.vel;
+//             k++;
+//         }
+//     }
+//     if (k == 0) return Vec3{0, 0, 0};
+//     return (sum / k) - this->vel;
+// }
+// Vec3 Boid::cohesion_with(const std::vector<Boid> &flock) const {
+//     Vec3 sum = {0, 0, 0};
+//     int k = 0;
+//     for (const auto &i: flock) {
+//         if (i.id == this->id) continue;
+//         float d_sq = dist_sq(this->pos, i.pos);
+//         if (d_sq > 0.0f && d_sq < r_view*r_view) {
+//             sum += i.pos;
+//             k++;
+//         }
+//     }
+//     if (k == 0) return Vec3{0, 0, 0};
+//     return (sum / k) - this->pos;
+// }
+
+
+void Boid::evolve(const std::vector<Boid> &flock, Dangers* const dangers[6], float dt) {
+    Vec3 sep_vector = {0.0f, 0.0f, 0.0f};
+    Vec3 ali_vector = {0.0f, 0.0f, 0.0f};
+    Vec3 coh_vector = {0.0f, 0.0f, 0.0f};
+
+    int neighbor_count = 0;
+    const float r_view_sq = this->r_view * this->r_view;
+
+    // ----- FASE 1: un solo passaggio, accumulo direzioni/medie dei Boid -----
+    for (const auto &other : flock) {
+        if (this->id == other.id) continue;
+
+        Vec3 offset = this->pos - other.pos;        // da "other" verso di me
+        float d_sq = length_sq(offset);
+
+        if (d_sq < r_view_sq && d_sq > 0.0f) {
+            float d = std::sqrt(d_sq);
+            float intensity = (this->r_view - d) / this->r_view;  // 1 vicino, 0 al bordo
+
+            sep_vector += (offset / d) * intensity;  // = normalize(offset)*intensity, una sola sqrt
+            ali_vector += other.vel;
+            coh_vector += other.pos;
+            ++neighbor_count;
         }
     }
-    if (k == 0) return Vec3{0, 0, 0};
-    return (sum / k) - this->vel;
-}
-Vec3 Boid::cohesion_with(const std::vector<Boid> &flock) const {
-    Vec3 sum = {0, 0, 0};
-    int k = 0;
-    for (const auto &i: flock) {
-        if (i.id == this->id) continue;
-        float d = dist(this->pos, i.pos);
-        if (d > 0.0f && d < r_view) {
-            sum += i.pos;
-            k++;
-        }
-    }
-    if (k == 0) return Vec3{0, 0, 0};
-    return (sum / k) - this->pos;
-}
 
-//calcolare repulsione da ostacoli-predatori
-Vec3 Boid::flee_from(const std::vector<std::unique_ptr<Dangers>> &pericoli) const {
-    Vec3 steer = {0, 0, 0};
+    // ----- FASE 2: Calcolo dello steering dai pericoli (Muri/Predatori) -----
+    Vec3 danger_steer = {0.0f, 0.0f, 0.0f};
+    const float r_fear_sq = this->r_fear * this->r_fear;
 
-    for (const auto &pericolo: pericoli) {
-        Vec3 closest_pt = pericolo->get_closest_point(this->pos);
-        float d = dist(this->pos, closest_pt);
+    for (int i = 0; i < 6; ++i) {
+        if (!dangers[i]) continue; // Controllo di sicurezza se il puntatore fosse nullo
 
-        if (d > 0.0f && d < this->r_fear) {
+        Vec3 closest_pt = dangers[i]->get_closest_point(this->pos);
+        float d_sq = dist_sq(this->pos, closest_pt);
+
+        if (d_sq > 0.0f && d_sq < r_fear_sq) {
+            float d = std::sqrt(d_sq);
             Vec3 direction = normalize(this->pos - closest_pt);
-            float intensity = (pericolo->get_base_threat() * this->fear_factor) / d;
+            float intensity = (dangers[i]->get_base_threat() * this->fear_factor) / d;
 
-            steer += direction * intensity;
+            danger_steer += direction * intensity;
         }
     }
-    return steer;
+
+    // ----- FASE 3: Risoluzione delle forze dei Boid -----
+    Vec3 sep = {0.0f, 0.0f, 0.0f};
+    Vec3 ali = {0.0f, 0.0f, 0.0f};
+    Vec3 coe = {0.0f, 0.0f, 0.0f};
+
+    if (neighbor_count > 0) {
+        const float cruise = this->max_speed;
+        const float inv_count = 1.0f / static_cast<float>(neighbor_count);
+
+        // SEPARAZIONE (desired - vel)
+        if (length_sq(sep_vector) > 0.0f)
+            sep = normalize(sep_vector) * cruise - this->vel;
+
+        // ALLINEAMENTO (desired - vel)
+        ali_vector *= inv_count;
+        if (length_sq(ali_vector) > 0.0f)
+            ali = normalize(ali_vector) * cruise - this->vel;
+
+        // COESIONE (desired - vel)
+        coh_vector = coh_vector * inv_count - this->pos;
+        if (length_sq(coh_vector) > 0.0f)
+            coe = normalize(coh_vector) * cruise - this->vel;
+    }
+
+    Vec3 acc = (sep * this->w_sep + danger_steer) + (ali * this->w_alig) + coe * this->w_cohes; // manca flee
+    this->increment_vel(acc * dt);
+    this->increment_pos(this->get_vel() * dt);
 }

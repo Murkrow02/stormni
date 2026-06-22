@@ -12,6 +12,6 @@ namespace Config {
     const float BOX_HALF_EXTENT = 200.0f;
 
     // Simulation params
-    const int N = 400;
+    const int N = 300;
 }
 #endif //GAME_CONFIGS_H

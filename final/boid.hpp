@@ -6,6 +6,7 @@
 #include "vec3.hpp"
 
 class Dangers;
+
 class Boid {
     int id;
 
@@ -47,15 +48,7 @@ public:
 
     float get_fear_factor() const;
 
-    /*----------------------
-     * REYNOLD'S RULES
-     ---------------------*/
-
-    Vec3 separation_from(const std::vector<Boid> &flock) const;
-    Vec3 alignment_to(const std::vector<Boid> &flock) const;
-    Vec3 cohesion_with(const std::vector<Boid> &flock) const;
-
-    Vec3 flee_from(const std::vector<std::unique_ptr<Dangers> > &pericoli) const;
+    void evolve(const std::vector<Boid> &flock, Dangers* const dangers[6], float dt);
 };
 
 

@@ -52,7 +52,7 @@ struct Vec3 {
 };
 
 inline static float norm(Vec3 a) { return sqrtf(a.x * a.x + a.y * a.y + a.z * a.z); }
-
+inline static float norm_sq(Vec3 a) { return (a.x * a.x + a.y * a.y + a.z * a.z);}
 static inline Vec3 normalize(Vec3 a) {
     float n = norm(a);
     if (n > 0.0f) return Vec3{a/n};
@@ -62,7 +62,11 @@ static inline Vec3 normalize(Vec3 a) {
 inline float dot(Vec3 const &a, Vec3 const &b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
-
+inline float dist_sq(Vec3 a, Vec3 b) {return norm_sq(a-b);}
 inline float dist(Vec3 a, Vec3 b) { return norm(a - b); }
+
+// Alias for above
+inline float length(Vec3 a) { return norm(a); }
+inline float length_sq(Vec3 a) { return norm_sq(a); }
 
 #endif //GAME_VEC3_H
