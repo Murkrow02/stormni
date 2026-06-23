@@ -33,8 +33,14 @@ void Engine::draw() {
     float dt = GetFrameTime();
     UpdateCamera(&camera, CAMERA_ORBITAL);
 
+    // Everyone reads same global state
     for (const auto & boid : flock) {
         boid->evolve(flock, dangers, dt);
+    }
+
+    // Apply new steerings all at once
+    for (const auto & boid : flock) {
+        boid->apply(dt);
     }
 
     BeginDrawing();

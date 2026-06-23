@@ -18,6 +18,7 @@ class Boid {
 protected:
     Vec3 pos;
     Vec3 vel;
+    Vec3 pending_acc{0.0f, 0.0f, 0.0f};
     float max_speed, r_view, r_sep, r_fear, fear_factor;
     //fear factor da 0 a 1, che poi moltiplica il threat del repulsore?!
     Color color;
@@ -52,6 +53,8 @@ public:
     float get_fear_factor() const;
 
     void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt);
+
+    void apply(float dt);
 };
 
 #endif
