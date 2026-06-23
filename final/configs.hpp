@@ -13,5 +13,6 @@ namespace Config {
 
     // Simulation params
     const int N = 300;
+    const float WALL_THREAT_FACTOR = 100.0f;
 }
 #endif //GAME_CONFIGS_H

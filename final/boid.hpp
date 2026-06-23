@@ -2,6 +2,7 @@
 #define BOID_HPP
 #include <raylib.h>
 #include <memory>
+#include <string>
 #include <vector>
 #include "vec3.hpp"
 
@@ -9,7 +10,7 @@ class Dangers;
 
 class Boid {
     int id;
-
+    std::string breed;
     void clamp_vel();
 
     void apply_wrap();
@@ -24,7 +25,7 @@ protected:
     float w_sep, w_alig, w_cohes;
 
 public:
-    Boid(int id, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
+    Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
          float r_fear, float fear_factor);
 
     virtual ~Boid() = default;
@@ -42,14 +43,15 @@ public:
 
     void set_pos(Vec3);
 
+    Color get_color();
+
     void increment_pos(Vec3);
 
     float get_r_fear() const;
 
     float get_fear_factor() const;
 
-    void evolve(const std::vector<Boid> &flock, Dangers* const dangers[6], float dt);
+    void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt);
 };
-
 
 #endif

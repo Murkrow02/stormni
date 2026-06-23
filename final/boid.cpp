@@ -3,19 +3,20 @@
 //
 
 #include "boid.hpp"
-#include "dangers.hpp"
+#include "danger.hpp"
 #include "configs.hpp"
 #include <vector>
 #include <memory>
 #include <random>
 
-Boid::Boid(int id, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
+Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
            float r_fear, float fear_factor) {
     this->color = color;
     this->max_speed = max_speed;
     this->id = id;
     this->r_fear = r_fear;
     this->fear_factor = fear_factor;
+    this->breed = breed;
 
     // Add some noise to parameters to make simulation look more organic
     static std::random_device rd;
@@ -78,6 +79,10 @@ void Boid::set_pos(const Vec3 pos) {
     apply_wrap();
 }
 
+Color Boid::get_color() {
+    return this->color;
+}
+
 void Boid::increment_pos(const Vec3 pos) {
     this->pos += pos;
     apply_wrap();
@@ -101,51 +106,7 @@ void Boid::clamp_vel() {
 
 
 
-// Vec3 Boid::separation_from(const std::vector<Boid> &flock) const {
-//     Vec3 steer = {0, 0, 0};
-//
-//     for (const auto &i: flock) {
-//         if (this->id == i.id) continue;
-//         float d_sq = dist_sq(this->pos, i.pos);
-//         if (d_sq > 0.0f && d_sq < r_sep*r_sep) {
-//             float d = std::sqrt(d_sq);
-//             steer += normalize(this->pos - i.pos) / d ;
-//         }
-//     }
-//     return steer;
-// }
-//
-// Vec3 Boid::alignment_to(const std::vector<Boid> &flock) const {
-//     Vec3 sum = {0, 0, 0};
-//     int k = 0;
-//     for (const auto &i: flock) {
-//         if (i.id == this->id) continue;
-//         float d_sq = dist_sq(i.pos, this->pos);
-//         if (d_sq > 0.0f && d_sq < r_view*r_view) {
-//             sum += i.vel;
-//             k++;
-//         }
-//     }
-//     if (k == 0) return Vec3{0, 0, 0};
-//     return (sum / k) - this->vel;
-// }
-// Vec3 Boid::cohesion_with(const std::vector<Boid> &flock) const {
-//     Vec3 sum = {0, 0, 0};
-//     int k = 0;
-//     for (const auto &i: flock) {
-//         if (i.id == this->id) continue;
-//         float d_sq = dist_sq(this->pos, i.pos);
-//         if (d_sq > 0.0f && d_sq < r_view*r_view) {
-//             sum += i.pos;
-//             k++;
-//         }
-//     }
-//     if (k == 0) return Vec3{0, 0, 0};
-//     return (sum / k) - this->pos;
-// }
-
-
-void Boid::evolve(const std::vector<Boid> &flock, Dangers* const dangers[6], float dt) {
+void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt) {
     Vec3 sep_vector = {0.0f, 0.0f, 0.0f};
     Vec3 ali_vector = {0.0f, 0.0f, 0.0f};
     Vec3 coh_vector = {0.0f, 0.0f, 0.0f};
@@ -155,9 +116,9 @@ void Boid::evolve(const std::vector<Boid> &flock, Dangers* const dangers[6], flo
 
     // ----- FASE 1: un solo passaggio, accumulo direzioni/medie dei Boid -----
     for (const auto &other : flock) {
-        if (this->id == other.id) continue;
+        if (this->id == other->id || this->breed != other->breed) continue;
 
-        Vec3 offset = this->pos - other.pos;        // da "other" verso di me
+        Vec3 offset = this->pos - other->pos;        // da "other" verso di me
         float d_sq = length_sq(offset);
 
         if (d_sq < r_view_sq && d_sq > 0.0f) {
@@ -165,8 +126,8 @@ void Boid::evolve(const std::vector<Boid> &flock, Dangers* const dangers[6], flo
             float intensity = (this->r_view - d) / this->r_view;  // 1 vicino, 0 al bordo
 
             sep_vector += (offset / d) * intensity;  // = normalize(offset)*intensity, una sola sqrt
-            ali_vector += other.vel;
-            coh_vector += other.pos;
+            ali_vector += other->vel;
+            coh_vector += other->pos;
             ++neighbor_count;
         }
     }

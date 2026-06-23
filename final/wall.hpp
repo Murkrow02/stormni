@@ -4,7 +4,7 @@
 
 #ifndef GAME_WALL_H
 #define GAME_WALL_H
-#include "dangers.hpp"
+#include "danger.hpp"
 
 class Wall : public Dangers {
     Vec3 origin;
