@@ -14,9 +14,8 @@ public:
     virtual ~Danger() = default;
     virtual float get_base_threat() const = 0;
     virtual Vec3 get_closest_point(const Vec3& boid_pos) const = 0;
-    virtual void movement(float /*dt*/) {}
 };
 
-} // namespace sim
+}
 
 #endif //GAME_REPULSORS_H

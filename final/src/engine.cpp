@@ -16,21 +16,17 @@
 namespace sim {
 
 void Engine::init_rl() {
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Starlings");
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Boid simulation");
     SetTargetFPS(60);
-    // Fullscreen borderless: la finestra assume la risoluzione del monitor
-    // (rapporto panoramico), affidabile anche su macOS.
-//    ToggleBorderlessWindowed();
 
-    // Camera dritta sull'asse Z, puntata all'origine: il cubo (centrato in 0,0,0)
-    // cade esattamente al centro dell'inquadratura.
+    // Camera init
     camera.position = {0.0f, -20.0f, BOX_HALF_Z + 350.0f};
     camera.target = {0.0f, -20.0f, 0.0f};
     camera.up = {0.0f, 1.0f, 0.0f};
     camera.fovy = 60.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-
+    // Set far plane distance
     rlSetClipPlanes(RL_CULL_DISTANCE_NEAR, 5000.0);
 }
 
@@ -124,13 +120,21 @@ void Engine::draw() {
     }
 
     BeginDrawing();
+
+    // Light blue
     ClearBackground({ 150, 170, 200, 255 } );
 
     BeginMode3D(camera);
+
+    // Draw boundaries
     DrawCubeWires({0, 0, 0}, 2 * BOX_HALF_X, 2 * BOX_HALF_Y, 2 * BOX_HALF_Z,
                   DARKGRAY);
+
+    // Draw each boid
     for (const auto & boid : boids) {
-        Vec3 direction = boid->get_heading();   // direzione filtrata: rotazione morbida del cono
+        Vec3 direction = boid->get_heading();
+
+        // Cover edge case (target_dir ≈ -heading (boid turn ~180°) and alpha ≈ 0.5)
         if (norm_sq(direction) < 0.5f) continue;
         Vector3 topPos = to_rl(boid->get_pos() + direction * boid->get_cone_height());
         DrawCylinderEx(to_rl(boid->get_pos()), topPos, boid->get_cone_base_r(), 0.0f, 12, boid->get_color());
@@ -234,8 +238,9 @@ void Engine::draw_stats() {
     panel("Seagulls",  "seagull",  W - pw - m, H - ph - m); // BOTTOM RIGHT
 }
 
-void Engine::clean() {
+Engine::~Engine() {
+    for (Danger* d : dangers) delete d;
     CloseWindow();
 }
 
-} // namespace sim
+}

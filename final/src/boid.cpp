@@ -1,7 +1,3 @@
-//
-// Created by Marco Coppola on 22/05/2026.
-//
-
 #include "boid.hpp"
 #include "danger.hpp"
 #include "configs.hpp"
@@ -27,7 +23,6 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
     this->r_view = r_view;
     this->r_sep = r_sep;
 
-    // Tutti i boid sono identici: l'unica casualita' e' posizione e direzione iniziale.
     static std::random_device rd;
     static std::default_random_engine eng(rd());
 
@@ -36,7 +31,6 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
     std::uniform_real_distribution<float> dist_z(-BOX_HALF_Z, BOX_HALF_Z);
     this->pos = {dist_x(eng), dist_y(eng), dist_z(eng)};
 
-    // direzione casuale, velocita' iniziale = max_speed (gia' a regime, niente transitori)
     std::uniform_real_distribution<float> dist_dir(-1.0f, 1.0f);
     this->vel = normalize(Vec3{dist_dir(eng), dist_dir(eng), dist_dir(eng)}) * this->max_speed;
     this->heading = normalize(this->vel);
@@ -121,8 +115,6 @@ void Boid::clamp_vel() {
     }
 }
 
-
-
 // Steering classico di Reynolds: forza = limit(normalize(desired)*max_speed - vel, max_force).
 // Restituisce 0 se 'desired' e' nullo (nessun vicino / direzione indefinita).
 Vec3 Boid::steer(Vec3 desired, float max_force) const {
@@ -131,7 +123,8 @@ Vec3 Boid::steer(Vec3 desired, float max_force) const {
     return limit(target_vel - this->vel, max_force);
 }
 
-void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const dangers[6], float dt) {
+void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const walls[6], float dt) {
+
     Vec3 sep_sum = {0.0f, 0.0f, 0.0f};   // somma direzioni di fuga, pesate per 1/d
     Vec3 ali_sum = {0.0f, 0.0f, 0.0f};   // somma velocita' dei vicini
     Vec3 coh_sum = {0.0f, 0.0f, 0.0f};   // somma posizioni dei vicini (per il centroide)
@@ -143,7 +136,7 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const
     const float r_sep_sq  = this->r_sep  * this->r_sep;
 
     // ----- FASE 1: un solo passaggio, accumulo le medie dai vicini -----
-    for (const auto &other : flock) {
+    for (const auto &other : boids) {
         if (this->id == other->id) continue;
 
         Vec3 offset = this->pos - other->pos;   // da "other" verso di me
@@ -198,10 +191,10 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const
 
     // Pericoli statici (muri).
     for (int i = 0; i < 6; ++i)
-        if (dangers[i]) flee(dangers[i]);
+        if (walls[i]) flee(walls[i]);
 
-    for (const auto &other : flock) {
-        if (this->id == other->id || this->breed == other->breed) continue;
+    for (const auto &other : boids) {
+        if (this->breed == other->breed) continue;
         if (const Danger* dgr = dynamic_cast<const Danger*>(other.get()))
             flee(dgr);
     }
@@ -231,4 +224,4 @@ void Boid::apply(float dt) {
     }
 }
 
-} // namespace sim
+}

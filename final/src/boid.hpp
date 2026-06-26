@@ -14,16 +14,13 @@ class Boid {
     int id;
     std::string breed;
     void clamp_vel();
-
     void apply_wrap();
-
-    // Steering classico di Reynolds: limit(normalize(desired)*max_speed - vel, max_force)
     Vec3 steer(Vec3 desired, float max_force) const;
 
 protected:
     Vec3 pos;
     Vec3 vel;
-    Vec3 heading{0.0f, 0.0f, 0.0f};   // direzione disegnata, filtrata frame-to-frame
+    Vec3 heading{0.0f, 0.0f, 0.0f};
     Vec3 pending_acc{0.0f, 0.0f, 0.0f};
     float max_speed, r_view, r_sep, r_fear, fear_factor;
     Color color;
@@ -64,7 +61,7 @@ public:
     float get_cone_height() const;
     float get_cone_base_r() const;
 
-    void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const dangers[6], float dt);
+    void evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const walls[6], float dt);
 
     void apply(float dt);
 };

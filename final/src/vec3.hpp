@@ -78,6 +78,6 @@ inline float dist(Vec3 a, Vec3 b) { return norm(a - b); }
 inline float length(Vec3 a) { return norm(a); }
 inline float length_sq(Vec3 a) { return norm_sq(a); }
 
-} // namespace sim
+}
 
 #endif //GAME_VEC3_H

@@ -7,45 +7,49 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(raylib REQUIRED)
 
-# Tutti i target trovano gli header del progetto (vec3.hpp, doctest.h, ...).
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+# Header del progetto (src/) e librerie esterne header-only (external/).
+include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 # Warning sempre attivi.
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # ---- Applicazione grafica ----
-add_executable(game main.cpp
-        vec3.hpp
-        configs.hpp
-        boid.cpp
-        boid.hpp
-        starling.cpp
-        starling.hpp
-        danger.hpp
-        wall.hpp
-        utils.cpp
-        engine.cpp
-        engine.hpp
-        swallow.cpp
-        swallow.hpp
-        seagull.hpp
-        seagull.cpp
-        raygui.h
-        raygui_impl.cpp)
+add_executable(game
+        src/main.cpp
+        src/vec3.hpp
+        src/configs.hpp
+        src/boid.cpp
+        src/boid.hpp
+        src/starling.cpp
+        src/starling.hpp
+        src/danger.hpp
+        src/wall.hpp
+        src/utils.cpp
+        src/engine.cpp
+        src/engine.hpp
+        src/swallow.cpp
+        src/swallow.hpp
+        src/seagull.hpp
+        src/seagull.cpp
+        external/raygui.h
+        src/raygui_impl.cpp)
 target_link_libraries(game PRIVATE raylib)
 
 # ---- Test ----
 enable_testing()
 
 # Matematica vettoriale: header-only, nessuna dipendenza esterna.
-add_executable(test_vec3 test_vec3.cpp vec3.hpp)
+add_executable(test_vec3 tests/test_vec3.cpp src/vec3.hpp)
 add_test(NAME test_vec3 COMMAND test_vec3)
 
 # Logica dei boid (regole di Reynolds, wrap, clamp) e pareti.
 # Dipende da raylib solo per il tipo Color.
-add_executable(test_boid test_boid.cpp
-        boid.cpp
-        swallow.cpp
-        starling.cpp)
+add_executable(test_boid
+        tests/test_boid.cpp
+        src/boid.cpp
+        src/swallow.cpp
+        src/starling.cpp)
 target_link_libraries(test_boid PRIVATE raylib)
 add_test(NAME test_boid COMMAND test_boid)

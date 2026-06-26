@@ -1,6 +1,6 @@
 # Simulazione del comportamento di stormi (Boids)
 
-**Autori:** Marco Coppola, Lucia [...]  <!-- completare con nomi e cognomi del gruppo -->
+**Autori:**
 **Data:** 26 giugno 2026
 **Repository Git:** https://github.com/Murkrow02/stormni
 

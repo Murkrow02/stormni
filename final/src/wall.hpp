@@ -22,12 +22,14 @@ public:
     float get_base_threat() const override {
         return threat;
     }
+
+    // VEDI MATEMATICA
     Vec3 get_closest_point(const Vec3& boid_pos) const override {
         float min_dist = dot(boid_pos - origin, normal);
         return boid_pos - (normal * min_dist);
     }
 };
 
-} // namespace sim
+}
 
 #endif //GAME_WALL_H
