@@ -32,7 +32,7 @@ void Engine::init_rl() {
 
 void Engine::draw() {
     float dt = GetFrameTime();
-    UpdateCamera(&camera, CAMERA_ORBITAL);
+    //UpdateCamera(&camera, CAMERA_ORBITAL);
 
     // Everyone reads same global state
     for (const auto & boid : flock) {

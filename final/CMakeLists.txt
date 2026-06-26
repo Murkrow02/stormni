@@ -9,7 +9,6 @@ find_package(raylib REQUIRED)
 add_executable(game main.cpp
         vec3.hpp
         configs.hpp
-        sim_params.hpp
         boid.cpp
         boid.hpp
         starling.cpp
@@ -22,7 +21,7 @@ add_executable(game main.cpp
         swallow.cpp
         swallow.hpp
         seagull.hpp
-        seagull.cpp)
+        seagull.cpp
         raygui.h
         raygui_impl.cpp)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

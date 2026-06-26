@@ -187,10 +187,11 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* cons
             coe = normalize(coh_vector) * cruise - this->vel;
     }
 
-    Vec3 acc = sep * (this->w_sep   * Config::g_params.w_sep)
-             + ali * (this->w_alig  * Config::g_params.w_alig)
-             + coe * (this->w_cohes * Config::g_params.w_cohes)
-             + danger_steer * Config::g_params.w_fear;
+    Vec3 acc =
+        //sep * (this->w_sep   * Config::g_params.w_sep)
+               ali * (this->w_alig  * Config::g_params.w_alig)
+              + coe * (this->w_cohes * Config::g_params.w_cohes);
+             // + danger_steer * Config::g_params.w_fear;
     this->pending_acc = acc;   // double-buffer: applica dopo che tutti hanno letto lo stato vecchio
 }
 
