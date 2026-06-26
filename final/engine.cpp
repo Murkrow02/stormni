@@ -44,11 +44,9 @@ void Engine::draw() {
     DrawCubeWires({0, 0, 0}, 2 * Config::BOX_HALF_EXTENT, 2 * Config::BOX_HALF_EXTENT, 2 * Config::BOX_HALF_EXTENT,
                   DARKGRAY);
     for (const auto & boid : flock) {
-        float coneBaseRadius = 1.5f;
-        float coneHeight = 5.0f;
         Vec3 direction = normalize(boid->get_vel());
-        Vector3 topPos = to_rl(boid->get_pos() + direction * coneHeight);
-        DrawCylinderEx(to_rl(boid->get_pos()), topPos, coneBaseRadius, 0.0f, 12, boid->get_color());
+        Vector3 topPos = to_rl(boid->get_pos() + direction * boid->get_cone_height());
+        DrawCylinderEx(to_rl(boid->get_pos()), topPos, boid->get_cone_base_r(), 0.0f, 12, boid->get_color());
     }
 
 

@@ -19,14 +19,13 @@ protected:
     Vec3 pos;
     Vec3 vel;
     float max_speed, r_view, r_sep, r_fear, fear_factor;
-    //fear factor da 0 a 1, che poi moltiplica il threat del repulsore?!
     Color color;
-
+    float cone_height, cone_base_r;
     float w_sep, w_alig, w_cohes;
 
 public:
     Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
-         float r_fear, float fear_factor);
+         float r_fear, float fear_factor, float cone_height, float cone_base_r);
 
     virtual ~Boid() = default;
 
@@ -50,6 +49,9 @@ public:
     float get_r_fear() const;
 
     float get_fear_factor() const;
+
+    float get_cone_height() const;
+    float get_cone_base_r() const;
 
     void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt);
 };

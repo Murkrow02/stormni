@@ -16,5 +16,7 @@ add_executable(game main.cpp
         engine.cpp
         engine.hpp
         swallow.cpp
-        swallow.hpp)
+        swallow.hpp
+        seagull.hpp
+        seagull.cpp)
 target_link_libraries(game PRIVATE raylib)

@@ -10,13 +10,15 @@
 #include <random>
 
 Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
-           float r_fear, float fear_factor) {
+           float r_fear, float fear_factor, float cone_height, float cone_base_r) {
     this->color = color;
     this->max_speed = max_speed;
     this->id = id;
     this->r_fear = r_fear;
     this->fear_factor = fear_factor;
     this->breed = breed;
+    this->cone_height = cone_height;
+    this->cone_base_r = cone_base_r;
 
     // Add some noise to parameters to make simulation look more organic
     static std::random_device rd;
@@ -94,6 +96,14 @@ float Boid::get_r_fear() const {
 
 float Boid::get_fear_factor() const {
     return fear_factor;
+}
+
+float Boid::get_cone_base_r() const {
+    return cone_base_r;
+}
+
+float Boid::get_cone_height() const {
+    return cone_height;
 }
 
 void Boid::clamp_vel() {

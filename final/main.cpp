@@ -8,6 +8,7 @@
 #include "utils.cpp"
 #include "engine.hpp"
 #include "swallow.hpp"
+#include "seagull.hpp"
 
 int main() {
 
@@ -15,7 +16,8 @@ int main() {
     auto engine = new Engine();
     engine->init_rl();
     engine->fill_flock<Swallow>();
-    //engine->fill_flock<Starling>();
+    engine->fill_flock<Starling>();
+    engine->fill_flock<Seagull>();
     engine->build_walls();
 
     while (!WindowShouldClose()) {
