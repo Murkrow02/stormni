@@ -18,6 +18,7 @@ int main() {
     engine->fill_flock<Swallow>();
     engine->fill_flock<Starling>();
     engine->fill_flock<Seagull>();
+
     engine->build_walls();
 
     while (!WindowShouldClose()) {

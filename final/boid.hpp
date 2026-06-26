@@ -18,6 +18,7 @@ class Boid {
 protected:
     Vec3 pos;
     Vec3 vel;
+    Vec3 pending_acc{0.0f, 0.0f, 0.0f};
     float max_speed, r_view, r_sep, r_fear, fear_factor;
     Color color;
     float cone_height, cone_base_r;
@@ -54,6 +55,8 @@ public:
     float get_cone_base_r() const;
 
     void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt);
+
+    void apply(float dt);
 };
 
 #endif

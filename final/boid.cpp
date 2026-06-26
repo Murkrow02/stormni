@@ -123,6 +123,7 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* cons
 
     int neighbor_count = 0;
     const float r_view_sq = this->r_view * this->r_view;
+    const float r_sep_sq = this->r_sep * this->r_sep;
 
     // ----- FASE 1: un solo passaggio, accumulo direzioni/medie dei Boid -----
     for (const auto &other : flock) {
@@ -135,7 +136,8 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* cons
             float d = std::sqrt(d_sq);
             float intensity = (this->r_view - d) / this->r_view;  // 1 vicino, 0 al bordo
 
-            sep_vector += (offset / d) * intensity;  // = normalize(offset)*intensity, una sola sqrt
+            if (d_sq < r_sep_sq)                     // separazione solo entro r_sep
+                sep_vector += (offset / d) * intensity;  // normalize(offset)*intensity, una sola sqrt
             ali_vector += other->vel;
             coh_vector += other->pos;
             ++neighbor_count;
@@ -185,7 +187,14 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* cons
             coe = normalize(coh_vector) * cruise - this->vel;
     }
 
-    Vec3 acc = (sep * this->w_sep + danger_steer) + (ali * this->w_alig) + coe * this->w_cohes; // manca flee
-    this->increment_vel(acc * dt);
+    Vec3 acc = sep * (this->w_sep   * Config::g_params.w_sep)
+             + ali * (this->w_alig  * Config::g_params.w_alig)
+             + coe * (this->w_cohes * Config::g_params.w_cohes)
+             + danger_steer * Config::g_params.w_fear;
+    this->pending_acc = acc;   // double-buffer: applica dopo che tutti hanno letto lo stato vecchio
+}
+
+void Boid::apply(float dt) {
+    this->increment_vel(this->pending_acc * dt);
     this->increment_pos(this->get_vel() * dt);
 }

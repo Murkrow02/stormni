@@ -4,6 +4,7 @@
 
 #include "engine.hpp"
 #include <raylib.h>
+#include "raygui.h"
 #include "configs.hpp"
 #include "starling.hpp"
 #include "wall.hpp"
@@ -33,8 +34,14 @@ void Engine::draw() {
     float dt = GetFrameTime();
     UpdateCamera(&camera, CAMERA_ORBITAL);
 
+    // Everyone reads same global state
     for (const auto & boid : flock) {
         boid->evolve(flock, dangers, dt);
+    }
+
+    // Apply new steerings all at once
+    for (const auto & boid : flock) {
+        boid->apply(dt);
     }
 
     BeginDrawing();
@@ -51,11 +58,26 @@ void Engine::draw() {
 
 
     EndMode3D();
-    // DrawText(TextFormat("W_SEP  = %.2f  (Q+/A-)", W_SEP), 10, 10, 18, WHITE);
-    // DrawText(TextFormat("W_ALL  = %.2f  (W+/S-)", W_ALL), 10, 30, 18, WHITE);
-    // DrawText(TextFormat("W_COES  = %.2f  (E+/D-)", W_COES), 10, 50, 18, WHITE);
+
+    draw_gui();
 
     EndDrawing();
+}
+
+void Engine::draw_gui() {
+    const float x = 10, w = 180, h = 16, step = 26;
+    float y = 20;
+
+    GuiLabel({x, 4, w, h}, "SIM PARAMS");
+
+    GuiSlider({x + 70, y, w, h}, "Separaz.", TextFormat("%.2f", Config::g_params.w_sep),
+              &Config::g_params.w_sep, 0.0f, 3.0f);  y += step;
+    GuiSlider({x + 70, y, w, h}, "Allinea.", TextFormat("%.2f", Config::g_params.w_alig),
+              &Config::g_params.w_alig, 0.0f, 3.0f);  y += step;
+    GuiSlider({x + 70, y, w, h}, "Coesione", TextFormat("%.2f", Config::g_params.w_cohes),
+              &Config::g_params.w_cohes, 0.0f, 3.0f);  y += step;
+    GuiSlider({x + 70, y, w, h}, "Paura",    TextFormat("%.2f", Config::g_params.w_fear),
+              &Config::g_params.w_fear, 0.0f, 3.0f);
 }
 
 void Engine::clean() {

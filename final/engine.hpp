@@ -17,6 +17,7 @@ public:
     void init_rl();
     void build_walls();
     void draw();
+    void draw_gui();
     void clean();
 
     template<typename T>

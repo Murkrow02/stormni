@@ -13,6 +13,16 @@ namespace Config {
 
     // Simulation params
     const int N = 100;
-    const float WALL_THREAT_FACTOR = 100.0f;
+    const float WALL_THREAT_FACTOR = 500.0f;
+
+    struct SimParams {
+        float w_sep   = 1.0f;
+        float w_alig  = 1.0f;
+        float w_cohes = 1.0f;
+        float w_fear  = 1.0f;
+    };
+
+    inline SimParams g_params;
+
 }
 #endif //GAME_CONFIGS_H
