@@ -6,17 +6,21 @@
 #define GAME_WALL_H
 #include "danger.hpp"
 
-class Wall : public Dangers {
+class Wall : public Danger {
     Vec3 origin;
     Vec3 normal;
+    float threat;
 
 public:
     Wall(Vec3 o, Vec3 n, float threat) {
         this->origin = o;
         this->normal = normalize(n);
-        this->base_threat = threat;
+        this->threat = threat;
     }
-    virtual Vec3 get_closest_point(const Vec3& boid_pos) const override {
+    float get_base_threat() const override {
+        return threat;
+    }
+    Vec3 get_closest_point(const Vec3& boid_pos) const override {
         float min_dist = dot(boid_pos - origin, normal);
         return boid_pos - (normal * min_dist);
     }

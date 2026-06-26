@@ -29,8 +29,10 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
     static std::random_device rd;
     static std::default_random_engine eng(rd());
 
-    std::uniform_real_distribution<float> dist_pos(-Config::BOX_HALF_EXTENT, Config::BOX_HALF_EXTENT);
-    this->pos = {dist_pos(eng), dist_pos(eng), dist_pos(eng)};
+    std::uniform_real_distribution<float> dist_x(-Config::BOX_HALF_X, Config::BOX_HALF_X);
+    std::uniform_real_distribution<float> dist_y(-Config::BOX_HALF_Y, Config::BOX_HALF_Y);
+    std::uniform_real_distribution<float> dist_z(-Config::BOX_HALF_Z, Config::BOX_HALF_Z);
+    this->pos = {dist_x(eng), dist_y(eng), dist_z(eng)};
 
     // direzione casuale, velocita' iniziale = max_speed (gia' a regime, niente transitori)
     std::uniform_real_distribution<float> dist_dir(-1.0f, 1.0f);
@@ -39,18 +41,18 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
 }
 
 void Boid::apply_wrap() {
-    if (this->pos.x < -Config::BOX_HALF_EXTENT)
-        this->pos.x += 2 * Config::BOX_HALF_EXTENT;
-    if (this->pos.x > Config::BOX_HALF_EXTENT)
-        this->pos.x -= 2 * Config::BOX_HALF_EXTENT;
-    if (this->pos.y < -Config::BOX_HALF_EXTENT)
-        this->pos.y += 2 * Config::BOX_HALF_EXTENT;
-    if (this->pos.y > Config::BOX_HALF_EXTENT)
-        this->pos.y -= 2 * Config::BOX_HALF_EXTENT;
-    if (this->pos.z < -Config::BOX_HALF_EXTENT)
-        this->pos.z += 2 * Config::BOX_HALF_EXTENT;
-    if (this->pos.z > Config::BOX_HALF_EXTENT)
-        this->pos.z -= 2 * Config::BOX_HALF_EXTENT;
+    if (this->pos.x < -Config::BOX_HALF_X)
+        this->pos.x += 2 * Config::BOX_HALF_X;
+    if (this->pos.x > Config::BOX_HALF_X)
+        this->pos.x -= 2 * Config::BOX_HALF_X;
+    if (this->pos.y < -Config::BOX_HALF_Y)
+        this->pos.y += 2 * Config::BOX_HALF_Y;
+    if (this->pos.y > Config::BOX_HALF_Y)
+        this->pos.y -= 2 * Config::BOX_HALF_Y;
+    if (this->pos.z < -Config::BOX_HALF_Z)
+        this->pos.z += 2 * Config::BOX_HALF_Z;
+    if (this->pos.z > Config::BOX_HALF_Z)
+        this->pos.z -= 2 * Config::BOX_HALF_Z;
 }
 
 Vec3 Boid::get_vel() const {
@@ -82,6 +84,10 @@ void Boid::set_pos(const Vec3 pos) {
 
 Color Boid::get_color() {
     return this->color;
+}
+
+const std::string& Boid::get_breed() const {
+    return this->breed;
 }
 
 void Boid::increment_pos(const Vec3 pos) {
@@ -123,7 +129,7 @@ Vec3 Boid::steer(Vec3 desired, float max_force) const {
     return limit(target_vel - this->vel, max_force);
 }
 
-void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt) {
+void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const dangers[6], float dt) {
     Vec3 sep_sum = {0.0f, 0.0f, 0.0f};   // somma direzioni di fuga, pesate per 1/d
     Vec3 ali_sum = {0.0f, 0.0f, 0.0f};   // somma velocita' dei vicini
     Vec3 coh_sum = {0.0f, 0.0f, 0.0f};   // somma posizioni dei vicini (per il centroide)
@@ -173,18 +179,29 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* cons
         coe = steer(to_centroid, max_force);                   // verso il centroide
     }
 
-    // ----- FASE 3: steering dai pericoli (Muri/Predatori) -- attualmente disabilitato -----
+    // ----- FASE 3: steering dai pericoli (Muri + boid-pericolo come i gabbiani) -----
     Vec3 danger_steer = {0.0f, 0.0f, 0.0f};
     const float r_fear_sq = this->r_fear * this->r_fear;
-    for (int i = 0; i < 6; ++i) {
-        if (!dangers[i]) continue;
-        Vec3 closest_pt = dangers[i]->get_closest_point(this->pos);
+
+    // Fuga generica da un Dangers: piu' vicino = repulsione piu' forte.
+    auto flee = [&](const Danger* dgr) {
+        Vec3 closest_pt = dgr->get_closest_point(this->pos);
         float d_sq = dist_sq(this->pos, closest_pt);
         if (d_sq > 0.0f && d_sq < r_fear_sq) {
             float d = std::sqrt(d_sq);
             danger_steer += normalize(this->pos - closest_pt)
-                          * ((dangers[i]->get_base_threat() * this->fear_factor) / d);
+                          * ((dgr->get_base_threat() * this->fear_factor) / d);
         }
+    };
+
+    // Pericoli statici (muri).
+    for (int i = 0; i < 6; ++i)
+        if (dangers[i]) flee(dangers[i]);
+
+    for (const auto &other : flock) {
+        if (this->id == other->id || this->breed == other->breed) continue;
+        if (const Danger* dgr = dynamic_cast<const Danger*>(other.get()))
+            flee(dgr);
     }
 
     // ----- FASE 4: somma pesata + limite totale sull'accelerazione -----
@@ -203,7 +220,7 @@ void Boid::apply(float dt) {
 
     // Heading filtrato: easing esponenziale verso la direzione della velocita'.
     // alpha indipendente dal frame-rate; TURN_RATE alto = piu' reattivo, basso = piu' morbido.
-    constexpr float TURN_RATE = 8.0f;
+    constexpr float TURN_RATE = 4.0f;
     float alpha = 1.0f - std::exp(-TURN_RATE * dt);
     Vec3 target_dir = normalize(this->vel);
     if (length_sq(target_dir) > 0.0f) {

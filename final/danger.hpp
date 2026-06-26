@@ -4,23 +4,15 @@
 
 #ifndef GAME_REPULSORS_H
 #define GAME_REPULSORS_H
-#include "Vec3.hpp"
+#include "vec3.hpp"
 #include <raylib.h>
 
-class Dangers {
-protected:
-    Color color;
-    float base_threat;
-
+class Danger {
 public:
-    virtual ~Dangers() = default;
-    float get_base_threat() const {
-        return base_threat;
-    }
+    virtual ~Danger() = default;
+    virtual float get_base_threat() const = 0;
     virtual Vec3 get_closest_point(const Vec3& boid_pos) const = 0;
-    virtual void movement(float dt){}
-
-
+    virtual void movement(float /*dt*/) {}
 };
 
 #endif //GAME_REPULSORS_H

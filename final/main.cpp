@@ -15,9 +15,17 @@ int main() {
 
     auto engine = new Engine();
     engine->init_rl();
-    engine->fill_flock<Swallow>();
-    engine->fill_flock<Starling>();
-    engine->fill_flock<Seagull>();
+
+    // Ask the user how many of each breed to spawn before building the flock.
+    if (!engine->setup_screen()) {
+        engine->clean();
+        delete engine;
+        return 0;
+    }
+
+    engine->fill_flock<Swallow>(Config::g_spawn.swallow);
+    engine->fill_flock<Starling>(Config::g_spawn.starling);
+    engine->fill_flock<Seagull>(Config::g_spawn.seagull);
 
     engine->build_walls();
 

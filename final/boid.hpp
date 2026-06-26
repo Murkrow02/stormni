@@ -6,7 +6,7 @@
 #include <vector>
 #include "vec3.hpp"
 
-class Dangers;
+class Danger;
 
 class Boid {
     int id;
@@ -51,6 +51,8 @@ public:
 
     Color get_color();
 
+    const std::string& get_breed() const;
+
     void increment_pos(Vec3);
 
     float get_r_fear() const;
@@ -60,7 +62,7 @@ public:
     float get_cone_height() const;
     float get_cone_base_r() const;
 
-    void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Dangers* const dangers[6], float dt);
+    void evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const dangers[6], float dt);
 
     void apply(float dt);
 };
