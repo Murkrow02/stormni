@@ -6,6 +6,8 @@
 #include <vector>
 #include "vec3.hpp"
 
+namespace sim {
+
 class Danger;
 
 class Boid {
@@ -66,5 +68,7 @@ public:
 
     void apply(float dt);
 };
+
+} // namespace sim
 
 #endif

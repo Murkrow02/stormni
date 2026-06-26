@@ -7,11 +7,12 @@
 #include "configs.hpp"
 #include "danger.hpp"
 
+namespace sim {
 
 class Engine {
     Danger* dangers[6];
     Camera3D camera = {0};
-    std::vector<std::unique_ptr<Boid>> flock;
+    std::vector<std::unique_ptr<Boid>> boids;
     int next_id = 0;   // unique across all breeds so separation skips only self
 
 public:
@@ -26,9 +27,11 @@ public:
     template<typename T>
     void fill_flock(int count) {
         for (int i = 0; i < count; ++i) {
-            flock.push_back(std::make_unique<T>(next_id++));
+            boids.push_back(std::make_unique<T>(next_id++));
         }
     }
 };
+
+} // namespace sim
 
 #endif //GAME_ENGINE_H

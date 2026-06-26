@@ -7,6 +7,7 @@
 
 #include "boid.hpp"
 
+namespace sim {
 
 class Swallow : public Boid {
 
@@ -14,6 +15,6 @@ public:
     Swallow(int id);
 };
 
-
+} // namespace sim
 
 #endif //GAME_STARLING_HPP

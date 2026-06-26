@@ -13,18 +13,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # Warning sempre attivi.
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-# Sanitizer e asserzioni della standard library in Debug (vedi consegna).
-# Su macOS (Darwin recenti) il runtime di AddressSanitizer va in hang all'avvio,
-# quindi i sanitizer si attivano solo su piattaforme non-Apple (es. l'ambiente
-# Linux di valutazione). I flag non sono altrimenti rilassati.
-if(NOT APPLE)
-    add_compile_options(
-            $<$<CONFIG:Debug>:-fsanitize=address,undefined>
-            $<$<CONFIG:Debug>:-fno-omit-frame-pointer>)
-    add_link_options($<$<CONFIG:Debug>:-fsanitize=address,undefined>)
-endif()
-add_compile_definitions($<$<CONFIG:Debug>:_GLIBCXX_ASSERTIONS>)
-
 # ---- Applicazione grafica ----
 add_executable(game main.cpp
         vec3.hpp

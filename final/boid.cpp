@@ -9,6 +9,8 @@
 #include <memory>
 #include <random>
 
+namespace sim {
+
 Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
            float r_fear, float fear_factor, float cone_height, float cone_base_r) {
     this->color = color;
@@ -29,9 +31,9 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
     static std::random_device rd;
     static std::default_random_engine eng(rd());
 
-    std::uniform_real_distribution<float> dist_x(-Config::BOX_HALF_X, Config::BOX_HALF_X);
-    std::uniform_real_distribution<float> dist_y(-Config::BOX_HALF_Y, Config::BOX_HALF_Y);
-    std::uniform_real_distribution<float> dist_z(-Config::BOX_HALF_Z, Config::BOX_HALF_Z);
+    std::uniform_real_distribution<float> dist_x(-BOX_HALF_X, BOX_HALF_X);
+    std::uniform_real_distribution<float> dist_y(-BOX_HALF_Y, BOX_HALF_Y);
+    std::uniform_real_distribution<float> dist_z(-BOX_HALF_Z, BOX_HALF_Z);
     this->pos = {dist_x(eng), dist_y(eng), dist_z(eng)};
 
     // direzione casuale, velocita' iniziale = max_speed (gia' a regime, niente transitori)
@@ -41,18 +43,18 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
 }
 
 void Boid::apply_wrap() {
-    if (this->pos.x < -Config::BOX_HALF_X)
-        this->pos.x += 2 * Config::BOX_HALF_X;
-    if (this->pos.x > Config::BOX_HALF_X)
-        this->pos.x -= 2 * Config::BOX_HALF_X;
-    if (this->pos.y < -Config::BOX_HALF_Y)
-        this->pos.y += 2 * Config::BOX_HALF_Y;
-    if (this->pos.y > Config::BOX_HALF_Y)
-        this->pos.y -= 2 * Config::BOX_HALF_Y;
-    if (this->pos.z < -Config::BOX_HALF_Z)
-        this->pos.z += 2 * Config::BOX_HALF_Z;
-    if (this->pos.z > Config::BOX_HALF_Z)
-        this->pos.z -= 2 * Config::BOX_HALF_Z;
+    if (this->pos.x < -BOX_HALF_X)
+        this->pos.x += 2 * BOX_HALF_X;
+    if (this->pos.x > BOX_HALF_X)
+        this->pos.x -= 2 * BOX_HALF_X;
+    if (this->pos.y < -BOX_HALF_Y)
+        this->pos.y += 2 * BOX_HALF_Y;
+    if (this->pos.y > BOX_HALF_Y)
+        this->pos.y -= 2 * BOX_HALF_Y;
+    if (this->pos.z < -BOX_HALF_Z)
+        this->pos.z += 2 * BOX_HALF_Z;
+    if (this->pos.z > BOX_HALF_Z)
+        this->pos.z -= 2 * BOX_HALF_Z;
 }
 
 Vec3 Boid::get_vel() const {
@@ -205,10 +207,10 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& flock, Danger* const
     }
 
     // ----- FASE 4: somma pesata + limite totale sull'accelerazione -----
-    Vec3 acc = sep * (this->w_sep   * Config::g_params.w_sep)
-             + ali * (this->w_alig  * Config::g_params.w_alig)
-             + coe * (this->w_cohes * Config::g_params.w_cohes)
-           + danger_steer * Config::g_params.w_fear;
+    Vec3 acc = sep * (this->w_sep   * g_params.w_sep)
+             + ali * (this->w_alig  * g_params.w_alig)
+             + coe * (this->w_cohes * g_params.w_cohes)
+           + danger_steer * g_params.w_fear;
 
     this->pending_acc = limit(acc, max_force);   // double-buffer: applica dopo che tutti leggono lo stato vecchio
     (void)dt;
@@ -228,3 +230,5 @@ void Boid::apply(float dt) {
         this->heading = normalize(this->heading);
     }
 }
+
+} // namespace sim

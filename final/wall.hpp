@@ -6,6 +6,8 @@
 #define GAME_WALL_H
 #include "danger.hpp"
 
+namespace sim {
+
 class Wall : public Danger {
     Vec3 origin;
     Vec3 normal;
@@ -25,5 +27,7 @@ public:
         return boid_pos - (normal * min_dist);
     }
 };
+
+} // namespace sim
 
 #endif //GAME_WALL_H

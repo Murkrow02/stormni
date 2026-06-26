@@ -7,6 +7,8 @@
 #include "vec3.hpp"
 #include <raylib.h>
 
+namespace sim {
+
 class Danger {
 public:
     virtual ~Danger() = default;
@@ -14,5 +16,7 @@ public:
     virtual Vec3 get_closest_point(const Vec3& boid_pos) const = 0;
     virtual void movement(float /*dt*/) {}
 };
+
+} // namespace sim
 
 #endif //GAME_REPULSORS_H

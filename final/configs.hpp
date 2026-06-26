@@ -2,7 +2,8 @@
 #define GAME_CONFIGS_H
 #include <string_view>
 
-namespace Config {
+namespace sim {
+
 
     // Window params: dimensioni iniziali, prima del passaggio a fullscreen.
     const int WINDOW_HEIGHT = 780;
@@ -42,5 +43,6 @@ namespace Config {
 
     const int MAX_PER_BREED = 1000;
 
-}
+
+} // namespace sim
 #endif //GAME_CONFIGS_H
