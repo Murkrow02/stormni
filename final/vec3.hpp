@@ -59,6 +59,13 @@ static inline Vec3 normalize(Vec3 a) {
     return Vec3{0, 0, 0};
 }
 
+// Tronca la lunghezza del vettore a 'max' mantenendone la direzione
+static inline Vec3 limit(Vec3 v, float max) {
+    float m2 = norm_sq(v);
+    if (m2 > max * max && m2 > 0.0f) return v * (max / sqrtf(m2));
+    return v;
+}
+
 inline float dot(Vec3 const &a, Vec3 const &b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }

@@ -3,6 +3,6 @@
 //
 #include "seagull.hpp"
 
-Seagull::Seagull(int id) : Boid(id, "seagull", 1, 1, 1, GRAY, 60, 80, 40, 1, 1, 20.0f, 6.0f) {
-}
+Seagull::Seagull(int id) : Boid(id, "seagull", 1, 1, 1, GRAY, 60, 60, 30, 20, 1, 16.0f, 5.0f) {}
+
 

@@ -15,9 +15,13 @@ class Boid {
 
     void apply_wrap();
 
+    // Steering classico di Reynolds: limit(normalize(desired)*max_speed - vel, max_force)
+    Vec3 steer(Vec3 desired, float max_force) const;
+
 protected:
     Vec3 pos;
     Vec3 vel;
+    Vec3 heading{0.0f, 0.0f, 0.0f};   // direzione disegnata, filtrata frame-to-frame
     Vec3 pending_acc{0.0f, 0.0f, 0.0f};
     float max_speed, r_view, r_sep, r_fear, fear_factor;
     Color color;
@@ -34,6 +38,8 @@ public:
      * GET & SET
      ---------------------*/
     Vec3 get_vel() const;
+
+    Vec3 get_heading() const;
 
     void set_vel(Vec3);
 

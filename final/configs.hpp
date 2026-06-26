@@ -12,7 +12,7 @@ namespace Config {
     const float BOX_HALF_EXTENT = 200.0f;
 
     // Simulation params
-    const int N = 300;
+    const int N = 100;
     const float WALL_THREAT_FACTOR = 500.0f;
 
     struct SimParams {
