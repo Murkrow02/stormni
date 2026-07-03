@@ -1,14 +1,15 @@
 #include "boid.hpp"
-#include "danger.hpp"
 #include "configs.hpp"
-#include <vector>
+#include "danger.hpp"
 #include <memory>
 #include <random>
+#include <vector>
 
 namespace sim {
 
-Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_cohes, Color color, float max_speed, float r_view, float r_sep,
-           float r_fear, float fear_factor, float cone_height, float cone_base_r) {
+Boid::Boid(int id, const std::string& breed, float w_sep, float w_alig, float w_cohes, Color color,
+           float max_speed, float r_view, float r_sep, float r_fear, float fear_factor,
+           float cone_height, float cone_base_r) {
     this->color = color;
     this->max_speed = max_speed;
     this->id = id;
@@ -37,18 +38,12 @@ Boid::Boid(int id, const std::string &breed, float w_sep, float w_alig, float w_
 }
 
 void Boid::apply_wrap() {
-    if (this->pos.x < -BOX_HALF_X)
-        this->pos.x += 2 * BOX_HALF_X;
-    if (this->pos.x > BOX_HALF_X)
-        this->pos.x -= 2 * BOX_HALF_X;
-    if (this->pos.y < -BOX_HALF_Y)
-        this->pos.y += 2 * BOX_HALF_Y;
-    if (this->pos.y > BOX_HALF_Y)
-        this->pos.y -= 2 * BOX_HALF_Y;
-    if (this->pos.z < -BOX_HALF_Z)
-        this->pos.z += 2 * BOX_HALF_Z;
-    if (this->pos.z > BOX_HALF_Z)
-        this->pos.z -= 2 * BOX_HALF_Z;
+    if (this->pos.x < -BOX_HALF_X) this->pos.x += 2 * BOX_HALF_X;
+    if (this->pos.x > BOX_HALF_X) this->pos.x -= 2 * BOX_HALF_X;
+    if (this->pos.y < -BOX_HALF_Y) this->pos.y += 2 * BOX_HALF_Y;
+    if (this->pos.y > BOX_HALF_Y) this->pos.y -= 2 * BOX_HALF_Y;
+    if (this->pos.z < -BOX_HALF_Z) this->pos.z += 2 * BOX_HALF_Z;
+    if (this->pos.z > BOX_HALF_Z) this->pos.z -= 2 * BOX_HALF_Z;
 }
 
 Vec3 Boid::get_vel() const {
@@ -78,7 +73,7 @@ void Boid::set_pos(const Vec3 pos) {
     apply_wrap();
 }
 
-Color Boid::get_color() {
+Color Boid::get_color() const {
     return this->color;
 }
 
@@ -123,30 +118,32 @@ Vec3 Boid::steer(Vec3 desired, float max_force) const {
     return limit(target_vel - this->vel, max_force);
 }
 
-void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const walls[6], float dt) {
+void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const walls[6],
+                  float dt) {
 
-    Vec3 sep_sum = {0.0f, 0.0f, 0.0f};   // somma direzioni di fuga, pesate per 1/d
-    Vec3 ali_sum = {0.0f, 0.0f, 0.0f};   // somma velocita' dei vicini
-    Vec3 coh_sum = {0.0f, 0.0f, 0.0f};   // somma posizioni dei vicini (per il centroide)
+    Vec3 sep_sum = {0.0f, 0.0f, 0.0f}; // somma direzioni di fuga, pesate per 1/d
+    Vec3 ali_sum = {0.0f, 0.0f, 0.0f}; // somma velocita' dei vicini
+    Vec3 coh_sum = {0.0f, 0.0f, 0.0f}; // somma posizioni dei vicini (per il centroide)
 
-    int view_count = 0;   // vicini entro r_view  (allineamento + coesione)
-    int sep_count  = 0;   // vicini entro r_sep   (separazione)
+    int view_count = 0; // vicini entro r_view  (allineamento + coesione)
+    int sep_count = 0;  // vicini entro r_sep   (separazione)
 
     const float r_view_sq = this->r_view * this->r_view;
-    const float r_sep_sq  = this->r_sep  * this->r_sep;
+    const float r_sep_sq = this->r_sep * this->r_sep;
 
     // ----- FASE 1: un solo passaggio, accumulo le medie dai vicini -----
-    for (const auto &other : boids) {
+    for (const auto& other : boids) {
         if (this->id == other->id) continue;
 
-        Vec3 offset = this->pos - other->pos;   // da "other" verso di me
+        Vec3 offset = this->pos - other->pos; // da "other" verso di me
         float d_sq = length_sq(offset);
         if (d_sq <= 0.0f) continue;
 
         // Separazione: contro TUTTI i boid, anche di razza diversa (evita collisioni tra specie)
         if (d_sq < r_sep_sq) {
             float d = std::sqrt(d_sq);
-            sep_sum += (offset / d) / d;        // normalize(offset) / d, piu' vicino = repulsione piu' forte
+            sep_sum +=
+                (offset / d) / d; // normalize(offset) / d, piu' vicino = repulsione piu' forte
             ++sep_count;
         }
 
@@ -164,14 +161,13 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const
     // ----- FASE 2: tre regole, ognuna come forza di sterzo limitata -----
     Vec3 sep{0.0f, 0.0f, 0.0f}, ali{0.0f, 0.0f, 0.0f}, coe{0.0f, 0.0f, 0.0f};
 
-    if (sep_count > 0)
-        sep = steer(sep_sum, max_force);                       // allontanati dai vicini
+    if (sep_count > 0) sep = steer(sep_sum, max_force); // allontanati dai vicini
 
     if (view_count > 0) {
         const float inv_count = 1.0f / static_cast<float>(view_count);
-        ali = steer(ali_sum * inv_count, max_force);           // verso la velocita' media
+        ali = steer(ali_sum * inv_count, max_force); // verso la velocita' media
         Vec3 to_centroid = coh_sum * inv_count - this->pos;
-        coe = steer(to_centroid, max_force);                   // verso il centroide
+        coe = steer(to_centroid, max_force); // verso il centroide
     }
 
     // ----- FASE 3: steering dai pericoli (Muri + boid-pericolo come i gabbiani) -----
@@ -184,8 +180,8 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const
         float d_sq = dist_sq(this->pos, closest_pt);
         if (d_sq > 0.0f && d_sq < r_fear_sq) {
             float d = std::sqrt(d_sq);
-            danger_steer += normalize(this->pos - closest_pt)
-                          * ((dgr->get_base_threat() * this->fear_factor) / d);
+            danger_steer += normalize(this->pos - closest_pt) *
+                            ((dgr->get_base_threat() * this->fear_factor) / d);
         }
     };
 
@@ -193,19 +189,17 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const
     for (int i = 0; i < 6; ++i)
         if (walls[i]) flee(walls[i]);
 
-    for (const auto &other : boids) {
+    for (const auto& other : boids) {
         if (this->breed == other->breed) continue;
-        if (const Danger* dgr = dynamic_cast<const Danger*>(other.get()))
-            flee(dgr);
+        if (const Danger* dgr = dynamic_cast<const Danger*>(other.get())) flee(dgr);
     }
 
     // ----- FASE 4: somma pesata + limite totale sull'accelerazione -----
-    Vec3 acc = sep * (this->w_sep   * g_params.w_sep)
-             + ali * (this->w_alig  * g_params.w_alig)
-             + coe * (this->w_cohes * g_params.w_cohes)
-           + danger_steer * g_params.w_fear;
+    Vec3 acc = sep * (this->w_sep * g_params.w_sep) + ali * (this->w_alig * g_params.w_alig) +
+               coe * (this->w_cohes * g_params.w_cohes) + danger_steer * g_params.w_fear;
 
-    this->pending_acc = limit(acc, max_force);   // double-buffer: applica dopo che tutti leggono lo stato vecchio
+    this->pending_acc =
+        limit(acc, max_force); // double-buffer: applica dopo che tutti leggono lo stato vecchio
     (void)dt;
 }
 
@@ -224,4 +218,4 @@ void Boid::apply(float dt) {
     }
 }
 
-}
+} // namespace sim

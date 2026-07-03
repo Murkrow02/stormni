@@ -1,6 +1,3 @@
-//
-// Created by lucia on 25/06/2026.
-//
 #include "seagull.hpp"
 #include "configs.hpp"
 
@@ -17,5 +14,3 @@ Vec3 Seagull::get_closest_point(const Vec3& /*boid_pos*/) const {
 }
 
 } // namespace sim
-
-

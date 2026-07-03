@@ -6,10 +6,10 @@ namespace sim {
 
 class Starling : public Boid {
 
-public:
+  public:
     Starling(int id);
 };
 
 } // namespace sim
 
-#endif //GAME_STARLING_HPP
+#endif // GAME_STARLING_HPP
