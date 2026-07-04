@@ -1,21 +1,38 @@
-cmake_minimum_required(VERSION 3.16)
-project(storni CXX)
+cmake_minimum_required(VERSION 3.28)
+project(storni VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 17)
+include(CTest)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+string(APPEND CMAKE_CXX_FLAGS
+      " -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion"
+      " -Wshadow -Wimplicit-fallthrough -Wextra-semi -Wold-style-cast"
+      " -fno-omit-frame-pointer")
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  string(APPEND CMAKE_CXX_FLAGS " -D_GLIBCXX_ASSERTIONS")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  string(APPEND CMAKE_CXX_FLAGS " -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE")
+endif()
+
+string(APPEND CMAKE_CXX_FLAGS_DEBUG " -fsanitize=address,undefined")
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  string(APPEND CMAKE_CXX_FLAGS " -D_GLIBCXX_SANITIZE_STD_ALLOCATOR")
+endif()
+string(APPEND CMAKE_EXE_LINKER_FLAGS_DEBUG " -fsanitize=address,undefined")
+
+
 find_package(raylib REQUIRED)
 
-# Header del progetto (src/) e librerie esterne header-only (external/).
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
-# Warning sempre attivi.
-add_compile_options(-Wall -Wextra -Wpedantic)
-
-# ---- Applicazione grafica ----
 add_executable(game
         src/main.cpp
         src/vec3.hpp
@@ -37,19 +54,19 @@ add_executable(game
         src/raygui_impl.cpp)
 target_link_libraries(game PRIVATE raylib)
 
-# ---- Test ----
-enable_testing()
+if (BUILD_TESTING)
+    
 
-# Matematica vettoriale: header-only, nessuna dipendenza esterna.
-add_executable(test_vec3 tests/test_vec3.cpp src/vec3.hpp)
-add_test(NAME test_vec3 COMMAND test_vec3)
+    add_executable(test_vec3 tests/test_vec3.cpp src/vec3.hpp)
+    add_test(NAME test_vec3 COMMAND test_vec3)
 
-# Logica dei boid (regole di Reynolds, wrap, clamp) e pareti.
-# Dipende da raylib solo per il tipo Color.
-add_executable(test_boid
-        tests/test_boid.cpp
-        src/boid.cpp
-        src/swallow.cpp
-        src/starling.cpp)
-target_link_libraries(test_boid PRIVATE raylib)
-add_test(NAME test_boid COMMAND test_boid)
+    
+    add_executable(test_boid
+            tests/test_boid.cpp
+            src/boid.cpp
+            src/swallow.cpp
+            src/starling.cpp)
+    target_link_libraries(test_boid PRIVATE raylib)
+    add_test(NAME test_boid COMMAND test_boid)
+
+endif()
