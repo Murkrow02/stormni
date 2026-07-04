@@ -147,7 +147,7 @@ void Engine::draw() {
     EndDrawing();
 }
 
-void Engine::draw_gui() {
+void Engine::draw_gui() const {
     const float x = 14, labelW = 72, w = 190, h = 20, step = 30;
     float y = 44;
 
@@ -179,7 +179,7 @@ void Engine::draw_gui() {
 }
 
 // HUD in alto a destra: stato sim + metriche flock.
-void Engine::draw_stats() {
+void Engine::draw_stats() const {
     // Metriche aggregate sui boid di una data razza (match per breed, non per colore).
     // Il colore del box e' quello reale dei boid di quella razza (sempre in sync).
     struct Stats {

@@ -1,6 +1,7 @@
 #ifndef GAME_WALL_H
 #define GAME_WALL_H
 #include "danger.hpp"
+#include <stdexcept>
 
 namespace sim {
 
@@ -14,6 +15,13 @@ class Wall : public Danger {
         this->origin = o;
         this->normal = normalize(n);
         this->threat = threat;
+
+        if (norm_sq(n) == 0.0f) {
+            throw std::runtime_error{"The normal vector of the Wall cannot be a zero vector"};
+        }
+        if (threat < 0.0f) {
+            throw std::runtime_error{"The Wall's threat factor cannot be negative"};
+        }
     }
     float get_base_threat() const override { return threat; }
 

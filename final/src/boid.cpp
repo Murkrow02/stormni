@@ -3,6 +3,7 @@
 #include "danger.hpp"
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 namespace sim {
@@ -10,6 +11,7 @@ namespace sim {
 Boid::Boid(int id, const std::string& breed, float w_sep, float w_alig, float w_cohes, Color color,
            float max_speed, float r_view, float r_sep, float r_fear, float fear_factor,
            float cone_height, float cone_base_r) {
+
     this->color = color;
     this->max_speed = max_speed;
     this->id = id;
@@ -35,6 +37,20 @@ Boid::Boid(int id, const std::string& breed, float w_sep, float w_alig, float w_
     std::uniform_real_distribution<float> dist_dir(-1.0f, 1.0f);
     this->vel = normalize(Vec3{dist_dir(eng), dist_dir(eng), dist_dir(eng)}) * this->max_speed;
     this->heading = normalize(this->vel);
+
+    if (max_speed <= 0.0f) {
+        throw std::runtime_error{"max_speed must be strictly positive"};
+    }
+
+    if (r_view < 0.0f || r_sep < 0.0f || r_fear < 0.0f) {
+        throw std::runtime_error{"Radii (view, sep, fear) cannot be negative"};
+    }
+    if (cone_height <= 0.0f || cone_base_r <= 0.0f) {
+        throw std::runtime_error{"Cone dimensions must be positive"};
+    }
+    if (w_sep < 0.0f || w_alig < 0.0f || w_cohes < 0.0f) {
+        throw std::runtime_error{"Reynolds weights should not be negative"};
+    }
 }
 
 void Boid::apply_wrap() {
@@ -139,7 +155,8 @@ void Boid::evolve(const std::vector<std::unique_ptr<Boid>>& boids, Danger* const
         float d_sq = length_sq(offset);
         if (d_sq <= 0.0f) continue;
 
-        // Separazione: contro TUTTI i boid, anche di razza diversa (evita collisioni tra specie)
+        // Separazione: contro TUTTI i boid, anche di razza diversa (evita collisioni tra
+        // specie)
         if (d_sq < r_sep_sq) {
             float d = std::sqrt(d_sq);
             sep_sum +=
@@ -217,5 +234,4 @@ void Boid::apply(float dt) {
         this->heading = normalize(this->heading);
     }
 }
-
 } // namespace sim

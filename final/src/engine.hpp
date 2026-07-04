@@ -20,8 +20,8 @@ class Engine {
     void build_walls();
     bool setup_screen(); // raygui menu: per-breed spawn counts; false if window closed
     void draw();
-    void draw_gui();
-    void draw_stats(); // HUD: FPS, conteggi, metriche flock
+    void draw_gui() const;
+    void draw_stats() const; // HUD: FPS, conteggi, metriche flock
 
     template <typename T> void fill_flock(int count) {
         for (int i = 0; i < count; ++i) {

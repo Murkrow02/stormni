@@ -4,31 +4,39 @@
 #include "seagull.hpp"
 #include "starling.hpp"
 #include "swallow.hpp"
+#include <cstdlib>
+#include <iostream>
+#include <stdexcept>
 
 using namespace sim;
 
 int main() {
+    try {
+        Engine engine;
+        engine.init_rl();
 
-    auto engine = new Engine();
-    engine->init_rl();
+        // Setup
+        if (!engine.setup_screen()) {
+            return EXIT_SUCCESS;
+        }
 
-    // Setup
-    if (!engine->setup_screen()) {
-        delete engine;
-        return 0;
+        engine.fill_flock<Swallow>(g_spawn.swallow);
+        engine.fill_flock<Starling>(g_spawn.starling);
+        engine.fill_flock<Seagull>(g_spawn.seagull);
+
+        engine.build_walls();
+
+        while (!WindowShouldClose()) {
+            engine.draw();
+        }
+
+        return EXIT_SUCCESS;
+
+    } catch (std::exception const& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+        return EXIT_FAILURE;
+    } catch (...) {
+        std::cerr << "Unknown error\n";
+        return EXIT_FAILURE;
     }
-
-    engine->fill_flock<Swallow>(g_spawn.swallow);
-    engine->fill_flock<Starling>(g_spawn.starling);
-    engine->fill_flock<Seagull>(g_spawn.seagull);
-
-    engine->build_walls();
-
-    while (!WindowShouldClose()) {
-        engine->draw();
-    }
-
-    delete engine;
-
-    return 0;
 }

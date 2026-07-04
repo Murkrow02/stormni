@@ -1,12 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-
 #include "vec3.hpp"
 
 using namespace sim;
-
-// Tolerance for float comparisons
-static constexpr float kEps = 1e-4f;
 
 TEST_CASE("Vec3 arithmetic operators") {
     Vec3 a{1.0f, 2.0f, 3.0f};
@@ -123,7 +119,7 @@ TEST_CASE("dot product") {
     CHECK(dot(Vec3{1.0f, 0.0f, 0.0f}, Vec3{0.0f, 1.0f, 0.0f}) == doctest::Approx(0.0f));
     CHECK(dot(Vec3{1.0f, 2.0f, 3.0f}, Vec3{4.0f, 5.0f, 6.0f}) == doctest::Approx(32.0f));
     Vec3 v{2.0f, -1.0f, 3.0f};
-    CHECK(dot(v, v) == doctest::Approx(norm_sq(v)));   // dot(v,v) == |v|^2
+    CHECK(dot(v, v) == doctest::Approx(norm_sq(v)));   
 }
 
 TEST_CASE("dist e dist_sq") {
@@ -133,5 +129,4 @@ TEST_CASE("dist e dist_sq") {
     CHECK(dist_sq(a, b) == doctest::Approx(25.0f));
     CHECK(dist(a, a) == doctest::Approx(0.0f));
     CHECK(dist(a, b) == doctest::Approx(dist(b, a)));   // symmetry
-    (void)kEps;
 }
