@@ -56,7 +56,7 @@ static inline Vec3 normalize(Vec3 a) {
 }
 
 // Tronca la lunghezza del vettore a 'max' mantenendone la direzione
-static inline Vec3 limit(Vec3 v, float max) {
+static inline Vec3 limit(Vec3 const& v, float max) {
     float m2 = norm_sq(v);
     if (m2 > max * max && m2 > 0.0f) return v * (max / sqrtf(m2));
     return v;
@@ -65,18 +65,18 @@ static inline Vec3 limit(Vec3 v, float max) {
 inline float dot(Vec3 const& a, Vec3 const& b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
-inline float dist_sq(Vec3 a, Vec3 b) {
+inline float dist_sq(Vec3 const& a, Vec3 const& b) {
     return norm_sq(a - b);
 }
-inline float dist(Vec3 a, Vec3 b) {
+inline float dist(Vec3 const& a, Vec3 const& b) {
     return norm(a - b);
 }
 
 // Alias for above
-inline float length(Vec3 a) {
+inline float length(Vec3 const& a) {
     return norm(a);
 }
-inline float length_sq(Vec3 a) {
+inline float length_sq(Vec3 const& a) {
     return norm_sq(a);
 }
 

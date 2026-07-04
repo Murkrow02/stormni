@@ -35,16 +35,12 @@ void Engine::build_walls() {
 }
 
 bool Engine::setup_screen() {
-
-    // One text/value box per breed. GuiValueBox = integer entry; click to edit, Enter/click to
-    // commit.
     const float labelW = 240, w = 180, h = 44, step = 64;
     const float x = (GetScreenWidth() - (labelW + 20 + w)) / 2 + labelW + 20;
 
-    // Larger raygui font so the menu reads big.
     GuiSetStyle(DEFAULT, TEXT_SIZE, 22);
 
-    int edit_breed = -1; // which box is in edit mode (-1 = none)
+    int edit_breed = -1; 
     bool start = false;
 
     while (!start && !WindowShouldClose()) {
@@ -67,6 +63,7 @@ bool Engine::setup_screen() {
             {"Seagulls", &g_spawn.seagull},
         };
 
+        // 1. Lettura Input
         for (int i = 0; i < 3; ++i) {
             GuiLabel({x - labelW - 20, y + 6, labelW, h}, rows[i].name);
             if (GuiValueBox({x, y, w, h}, nullptr, rows[i].value, 0, MAX_PER_BREED,
@@ -76,30 +73,38 @@ bool Engine::setup_screen() {
             y += step;
         }
 
-        // Toggle orbital camera rotation around the cube.
         GuiCheckBox({x - labelW - 20, y + 6, h - 8, h - 8}, "Camera rotation", &g_orbit_camera);
         y += step;
 
+        // 2. VALIDAZIONE E GESTIONE ERRORE (ORA È DENTRO IL LOOP!)
+        auto sum = g_spawn.seagull + g_spawn.swallow + g_spawn.starling;
+        if (sum > 600) {
+            // Nota: ho usato 'y' invece del tuo 'y_error' che non era definito
+            DrawText("Error: Reduce the total amount of birds to less than 600.", x - labelW - 20, y, 20, RED);
+            
+            // Disabilita i controlli grafici SUCCESSIVI (cioè il pulsante START)
+            GuiDisable(); 
+        }
+        y += step;
+
+        // 3. Pulsante di Avvio
         GuiSetStyle(DEFAULT, TEXT_SIZE, 28);
-        if (GuiButton({x - labelW - 20, y + 40, labelW + 20 + w, h + 12}, "START")) start = true;
+        if (GuiButton({x - labelW - 20, y, labelW + 20 + w, h + 12}, "START")) {
+            start = true; // Esce dal loop e fa partire il gioco
+        }
         GuiSetStyle(DEFAULT, TEXT_SIZE, 22);
+
+        // 4. Riabilita la GUI per il prossimo frame (se era stata disabilitata)
+        GuiEnable();
 
         EndDrawing();
     }
 
     // Restore default font size for the in-sim HUD.
     GuiSetStyle(DEFAULT, TEXT_SIZE, 10);
-
-    auto sum = g_spawn.seagull + g_spawn.swallow + g_spawn.starling;
-    if (sum > 600) {
-        std::cerr << sum << " boids are too many! Reduce the total amount of birds to less than 600"
-                  << std::endl;
-        start = false;
-    }
-
+    
     return start;
 }
-
 void Engine::draw() {
     float dt = GetFrameTime();
     if (g_orbit_camera) UpdateCamera(&camera, CAMERA_ORBITAL);
